@@ -1,11 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "baseBranches": ["main"],
+  "baseBranches": ["development"],
   "labels": ["Renovate::Dependencies"],
-  "optimizeForDisabled": true,
-  "repositoryCache": "enabled",
-  "requireConfig": "optional",
-  "onboarding": false,
   "ignorePrAuthor": true,
   "extends": ["config:recommended"],
   "commitMessageAction": "⬆️ update",
