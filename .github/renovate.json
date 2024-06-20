@@ -7,7 +7,7 @@
   "requireConfig": "optional",
   "onboarding": false,
   "ignorePrAuthor": true,
-  "extends": ["config:base"],
+  "extends": ["config:recommended"],
   "commitMessageAction": "⬆️ update",
   "commitMessageTopic": "{{depName}}",
   "automerge": false,
