@@ -1,0 +1,41 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "baseBranches": ["main"],
+  "labels": ["Renovate::Dependencies"],
+  "optimizeForDisabled": true,
+  "repositoryCache": "enabled",
+  "requireConfig": "optional",
+  "onboarding": false,
+  "ignorePrAuthor": true,
+  "extends": ["config:base"],
+  "commitMessageAction": "⬆️ update",
+  "commitMessageTopic": "{{depName}}",
+  "automerge": false,
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["Security", "Type: Critical"]
+  },
+  "internalChecksFilter": "strict",
+  "prConcurrentLimit": 12,
+  "prHourlyLimit": 12,
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["^@types/"],
+      "groupName": "@types",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      "matchPackagePatterns": ["eslint", "^@eslint"],
+      "groupName": "eslint",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      "matchPackagePatterns": ["prettier"],
+      "groupName": "prettier",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    }
+  ]
+}
