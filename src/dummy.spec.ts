@@ -6,7 +6,7 @@ import { describe, it } from 'node:test';
 import { add } from './dummy.js';
 
 describe('Given add', () => {
-  it('should 1 + 1 to 2', () => {
+  it('should add 1 + 1 to 2', () => {
     equal(add(1, 1), 2);
   });
 });
