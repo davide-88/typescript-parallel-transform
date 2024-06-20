@@ -43,7 +43,7 @@ const configTestStream = ({ files, watch, timeout, concurrency }) => {
  * @param config {TestConfig} Configuration object.
  * @return {Promise<void>}
  */
-export const runAllTests = async config => {
+const runAllTests = async config => {
   const start = hrtime.bigint();
   const files = await fastGlobAsync(config.tests, {
     absolute: true,
@@ -67,7 +67,7 @@ export const runAllTests = async config => {
   );
 };
 
-function parseConfig() {
+const parseConfig = () => {
   const args = process.argv.slice(2, process.argv.length);
   const { values: config } = parseArgs({
     args,
@@ -105,7 +105,7 @@ function parseConfig() {
     },
   });
   return config;
-}
+};
 
 try {
   const config = parseConfig();
