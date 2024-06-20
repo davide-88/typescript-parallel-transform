@@ -11,6 +11,12 @@
   "bugs": {
     "url": "https://github.com/davide-88/typescript-parallel-transform/issues"
   },
+  "author": "davide-88",
+  "license": "MIT",
+  "packageManager": "pnpm@9.4.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "main": "./lib/index.cjs",
   "module": "./lib/index.js",
   "exports": {
@@ -22,12 +28,6 @@
   "files": [
     "lib"
   ],
-  "scripts": {
-    "build": "pnpm run \"/^build:.*/\"",
-    "build:type-check": "tsc",
-    "build:bundle": "tsup-node",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "keywords": [
     "ts",
     "library",
@@ -35,15 +35,28 @@
     "stream",
     "transform"
   ],
-  "author": "davide-88",
-  "license": "MIT",
-  "devDependencies": {
-    "@tsconfig/node-lts": "20.1.3",
-    "tsup": "^8.1.0",
-    "typescript": "5.4.5"
+  "scripts": {
+    "build": "pnpm run \"/^build:.*/\"",
+    "build:bundle": "tsup-node",
+    "build:type-check": "tsc",
+    "format": "pnpm run \"/^format:.*/\"",
+    "format:eslint": "eslint --cache --color ./src/**/* --fix",
+    "format:prettier": "prettier --write --cache --cache-location=.prettiercache --list-different \"./**/*.{html,css,js,cjs,jsx,ts,cts,tsx,md,json}\"",
+    "lint": "pnpm run \"/^lint:.*/\"",
+    "lint:eslint": "eslint --cache --color ./src/**/*",
+    "lint:prettier": "prettier --cache --cache-location=.prettiercache --list-different \"./**/*.{html,css,js,cjs,jsx,ts,cts,tsx,md,json}\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "packageManager": "pnpm@9.4.0",
-  "engines": {
-    "node": ">=20.0.0"
+  "devDependencies": {
+    "@eslint/js": "8.57.0",
+    "@ianvs/prettier-plugin-sort-imports": "^4.2.1",
+    "@tsconfig/node-lts": "20.1.3",
+    "eslint": "8.57.0",
+    "globals": "15.6.0",
+    "prettier": "3.3.2",
+    "prettier-plugin-pkg": "0.18.1",
+    "tsup": "8.1.0",
+    "typescript": "5.4.5",
+    "typescript-eslint": "7.13.1"
   }
 }
