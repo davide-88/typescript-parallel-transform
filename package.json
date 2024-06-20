@@ -1,0 +1,36 @@
+{
+  "name": "typescript-parallel-transform",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A typescript first implementation of a parallel transform stream",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davide-88/typescript-parallel-transform.git"
+  },
+  "homepage": "https://github.com/davide-88/typescript-parallel-transform#readme",
+  "bugs": {
+    "url": "https://github.com/davide-88/typescript-parallel-transform/issues"
+  },
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ts",
+    "library",
+    "node",
+    "stream",
+    "transform"
+  ],
+  "author": "davide-88",
+  "license": "MIT",
+  "devDependencies": {
+    "@tsconfig/node-lts": "20.1.3",
+    "typescript": "5.4.5"
+  },
+  "packageManager": "pnpm@9.4.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

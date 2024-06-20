@@ -1,0 +1,38 @@
+# dotenv environment variable files
+.env
+
+# Logs
+*.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Optional tool caches
+.eslintcache
+.stylelintcache
+.prettiercache
+
+# Dependency directories
+node_modules
+jspm_packages
+
+# Optional npm cache directory
+.npm
+
+# Typescript
+*.tsbuildinfo
+
+# Testing
+/coverage
+
+## library folder
+lib

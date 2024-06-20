@@ -1,0 +1,11 @@
+{
+  "extends": "@tsconfig/node-lts/tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true /* Do not emit outputs. */,
+    "isolatedModules": true /* Transpile each file as a separate module (similar to 'ts.transpileModule'). */,
+    "forceConsistentCasingInFileNames": true, // Error out if import and file system have a casing mismatch. Recommended by TS.
+    "skipLibCheck": true, // Significant perf increase by skipping checking .d.ts files, particularly those in node_modules. Recommended by TS.
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"],
+}
