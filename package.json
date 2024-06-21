@@ -66,6 +66,7 @@
     "typescript": "5.5.2",
     "typescript-eslint": "7.13.1"
   },
+  "sideEffects": false,
   "commitlint": {
     "extends": [
       "@commitlint/config-conventional"
