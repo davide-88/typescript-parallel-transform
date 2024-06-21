@@ -1,1 +1,1 @@
-export { add } from './dummy.js';
+export { ParallelTransform } from './parallel-transform.js';

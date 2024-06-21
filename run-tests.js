@@ -1,6 +1,6 @@
 import { availableParallelism } from 'node:os';
 import { join } from 'node:path';
-import { cwd, hrtime, stdout } from 'node:process';
+import { argv, cwd, exit, hrtime, stdout } from 'node:process';
 import { PassThrough } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { run } from 'node:test';
@@ -68,7 +68,7 @@ const runAllTests = async config => {
 };
 
 const parseConfig = () => {
-  const args = process.argv.slice(2, process.argv.length);
+  const args = argv.slice(2, argv.length);
   const { values: config } = parseArgs({
     args,
     options: {
@@ -114,7 +114,7 @@ try {
     watch: config.watch,
     silent: config.silent,
     timeout: Number(config.timeout),
-    concurrency: Number(config.concurrency),
+    concurrency: Math.max(Number(config.concurrency) - 1, 1),
     logger: {
       info: console.info,
       error: console.error,
@@ -127,5 +127,5 @@ try {
     `An error occurred: ${e.message}: `,
     inspect(e, { depth: null }),
   );
-  process.exit(1);
+  exit(1);
 }
