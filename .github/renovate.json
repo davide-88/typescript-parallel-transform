@@ -32,6 +32,12 @@
       "groupName": "prettier",
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
+    },
+    {
+      "matchPackagePatterns": ["commitlint"],
+      "groupName": "commitlint",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
     }
   ]
 }
