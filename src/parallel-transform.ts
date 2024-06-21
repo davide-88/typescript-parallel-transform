@@ -14,12 +14,8 @@ export class ParallelTransform extends Transform {
       chunk: never,
       _: BufferEncoding,
       done: TransformCallback,
-    ): void => {
-      done(null, chunk);
-    },
-    flush = (done: TransformCallback): void => {
-      done(null);
-    },
+    ): void => done(null, chunk),
+    flush = (done: TransformCallback): void => done(null),
     ...options
   }: TransformOptions) {
     super(options);
