@@ -1,11 +1,11 @@
-import { deepEqual, equal } from 'node:assert/strict';
+import { deepEqual, equal, ok } from 'node:assert/strict';
 import { Readable, type TransformCallback } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { describe, it } from 'node:test';
 
 import { ParallelTransform } from './parallel-transform.js';
 import { AsyncIdentity } from './utils/async-identity.js';
-import { simulateEvents } from './utils/events-simulation.js';
+import { eventsSimulation } from './utils/events-simulation.js';
 import { collect } from './utils/stream/collect.js';
 
 describe('Given ParallelTransform', () => {
@@ -84,7 +84,6 @@ describe('Given ParallelTransform', () => {
       });
     }
   });
-
   describe('When creating a new instance in an asynchronous pipeline of objects', () => {
     const testCases = [
       {
@@ -92,6 +91,7 @@ describe('Given ParallelTransform', () => {
           'When input is an empty array, it should return an empty array',
         input: Readable.from([]),
         eventsDuration: [],
+        maxConcurrency: 16,
         expected: {
           result: [],
           transform: {
@@ -105,6 +105,7 @@ describe('Given ParallelTransform', () => {
           'it should return [1]',
         input: Readable.from([1]),
         eventsDuration: [1000],
+        maxConcurrency: 16,
         expected: {
           result: [1],
           transform: {
@@ -119,6 +120,7 @@ describe('Given ParallelTransform', () => {
           'it should return [1,2]',
         input: Readable.from([1, 2]),
         eventsDuration: [1000, 1000],
+        maxConcurrency: 16,
         expected: {
           result: [1, 2],
           transform: {
@@ -133,8 +135,39 @@ describe('Given ParallelTransform', () => {
           'it should return [2,1] (input order is not preserved)',
         input: Readable.from([1, 2]),
         eventsDuration: [1000, 100],
+        maxConcurrency: 16,
         expected: {
           result: [2, 1],
+          transform: {
+            callCount: 2,
+          },
+        },
+      },
+      {
+        description:
+          'When input is [1,2] and transform is an async identity that takes ' +
+          '1000ms and 100ms respectively and concurrency is capped to 1, ' +
+          'it should return [1,2] (order is preserved since max concurrency is 1)',
+        input: Readable.from([1, 2]),
+        eventsDuration: [1000, 100],
+        maxConcurrency: 1,
+        expected: {
+          result: [1, 2],
+          transform: {
+            callCount: 2,
+          },
+        },
+      },
+      {
+        description:
+          'When input is [1,2] and transform is an async identity that takes ' +
+          '100ms and 1000ms respectively and concurrency is capped to 1, ' +
+          'it should return [1,2] (order is preserved since max concurrency is 1)',
+        input: Readable.from([1, 2]),
+        eventsDuration: [100, 1000],
+        maxConcurrency: 1,
+        expected: {
+          result: [1, 2],
           transform: {
             callCount: 2,
           },
@@ -147,6 +180,7 @@ describe('Given ParallelTransform', () => {
           'it should return [1,2,3] (according to computational order)',
         input: Readable.from([1, 2, 3]),
         eventsDuration: [100, 200, 1000],
+        maxConcurrency: 16,
         expected: {
           result: [1, 2, 3],
           transform: {
@@ -161,6 +195,69 @@ describe('Given ParallelTransform', () => {
           'it should return [3,2,1] (input order is not preserved)',
         input: Readable.from([1, 2, 3]),
         eventsDuration: [1000, 200, 100],
+        maxConcurrency: 16,
+        expected: {
+          result: [3, 2, 1],
+          transform: {
+            callCount: 3,
+          },
+        },
+      },
+      {
+        description:
+          'When input is [1,2,3] and transform is an async identity that takes ' +
+          '1000ms, 200ms and 100ms respectively and concurrency is capped to 1, ' +
+          'it should return [1,2,3] (order is preserved since max concurrency is 1)',
+        input: Readable.from([1, 2, 3]),
+        eventsDuration: [1000, 200, 100],
+        maxConcurrency: 1,
+        expected: {
+          result: [1, 2, 3],
+          transform: {
+            callCount: 3,
+          },
+        },
+      },
+      {
+        description:
+          'When input is [1,2,3] and transform is an async identity that takes ' +
+          '1000ms, 200ms and 100ms respectively and concurrency is capped to 2, ' +
+          'it should return [2,3,1] (order is not preserved since max concurrency is 2. ' +
+          'The first chunk takes more than the second + the third ones. Thus they complete first.)',
+        input: Readable.from([1, 2, 3]),
+        eventsDuration: [1000, 200, 100],
+        maxConcurrency: 2,
+        expected: {
+          result: [2, 3, 1],
+          transform: {
+            callCount: 3,
+          },
+        },
+      },
+      {
+        description:
+          'When input is [1,2,3] and transform is an async identity that takes ' +
+          '1000ms, 800ms and 300ms respectively and concurrency is capped to 2, ' +
+          'it should return [2,1,3] (order is not preserved since max concurrency is 2. ' +
+          'The first chunk takes more than the second but less than the second + the third ones.)',
+        input: Readable.from([1, 2, 3]),
+        eventsDuration: [1000, 800, 300],
+        maxConcurrency: 2,
+        expected: {
+          result: [2, 1, 3],
+          transform: {
+            callCount: 3,
+          },
+        },
+      },
+      {
+        description:
+          'When input is [1,2,3] and transform is an async identity that takes ' +
+          '1000ms, 800ms and 300ms respectively and concurrency is capped to 3, ' +
+          'it should return [3,2,1] (order is not preserved since max concurrency is 3)',
+        input: Readable.from([1, 2, 3]),
+        eventsDuration: [1000, 800, 300],
+        maxConcurrency: 3,
         expected: {
           result: [3, 2, 1],
           transform: {
@@ -244,7 +341,13 @@ describe('Given ParallelTransform', () => {
       },
     ];
 
-    for (const { input, expected, description, eventsDuration } of testCases) {
+    for (const {
+      input,
+      expected,
+      description,
+      eventsDuration,
+      maxConcurrency = 16,
+    } of testCases) {
       it(description, async context => {
         const result: never[] = [];
         const asyncTransform = new AsyncIdentity(eventsDuration);
@@ -254,6 +357,7 @@ describe('Given ParallelTransform', () => {
           input,
           new ParallelTransform({
             objectMode: true,
+            maxConcurrency,
             transform: (
               chunk: never,
               bufferEncoding: BufferEncoding,
@@ -264,10 +368,16 @@ describe('Given ParallelTransform', () => {
           }),
           collect(result),
         );
-        simulateEvents(eventsDuration, context);
+        eventsSimulation.simulate({ eventsDuration, maxConcurrency }, context);
         await pipelinePromise;
         deepEqual(result, expected.result);
         equal(transformMock.mock.callCount(), expected.transform.callCount);
+        ok(
+          asyncTransform.getMaxConcurrentCalls() <= maxConcurrency,
+          `measured max concurrency ${asyncTransform.getMaxConcurrentCalls()} when ${
+            maxConcurrency
+          } was expected`,
+        );
         context.mock.timers.reset();
       });
     }

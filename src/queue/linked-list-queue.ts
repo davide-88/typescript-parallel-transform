@@ -5,10 +5,17 @@ class Node<T> {
   constructor(public readonly value: T) {}
 }
 
-export class LinkedListQueue<T> implements Queue<T> {
+export class LinkedListQueue<T> extends Queue<T> {
   private head: Node<T> | undefined = undefined;
   private tail: Node<T> | undefined = undefined;
   private numberOfNodes = 0;
+
+  constructor(initial?: T[]) {
+    super();
+    for (const value of initial ?? []) {
+      this.enqueue(value);
+    }
+  }
 
   enqueue(value: T): void {
     const node = new Node(value);
@@ -33,5 +40,19 @@ export class LinkedListQueue<T> implements Queue<T> {
 
   size(): number {
     return this.numberOfNodes;
+  }
+
+  [Symbol.iterator](): Iterator<T> {
+    let current = this.head;
+    return {
+      next(): IteratorResult<T> {
+        if (!current) {
+          return { done: true, value: undefined };
+        }
+        const value = current.value;
+        current = current.next;
+        return { done: false, value };
+      },
+    };
   }
 }

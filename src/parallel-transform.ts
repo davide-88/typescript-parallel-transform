@@ -1,13 +1,24 @@
 import { Transform } from 'node:stream';
 import type { TransformCallback, TransformOptions } from 'node:stream';
 
+export type ParallelTransformOptions = TransformOptions & {
+  maxConcurrency?: number;
+};
+
 export class ParallelTransform extends Transform {
-  private user: {
+  private readonly user: {
     transform: Exclude<TransformOptions['transform'], undefined>;
     flush: Exclude<TransformOptions['flush'], undefined>;
   };
+  private readonly maxConcurrency: number;
   private running: number = 0;
-  private flushDone: TransformCallback | undefined = undefined;
+  private readonly callbacks: {
+    flush: TransformCallback | undefined;
+    transform: TransformCallback | undefined;
+  } = {
+    flush: undefined,
+    transform: undefined,
+  };
 
   constructor({
     transform = (
@@ -16,13 +27,15 @@ export class ParallelTransform extends Transform {
       done: TransformCallback,
     ): void => done(null, chunk),
     flush = (done: TransformCallback): void => done(null),
+    maxConcurrency = 16,
     ...options
-  }: TransformOptions) {
+  }: ParallelTransformOptions) {
     super(options);
     this.user = {
       transform,
       flush,
     };
+    this.maxConcurrency = maxConcurrency;
   }
 
   _transform(
@@ -37,13 +50,17 @@ export class ParallelTransform extends Transform {
       encoding,
       this.onUserTransformComplete.bind(this),
     );
-    done();
+    if (this.running < this.maxConcurrency) {
+      done();
+    } else {
+      this.callbacks.transform = done;
+    }
   }
 
   _flush(done: TransformCallback) {
     if (this.running > 0) {
       this.user.flush.call(this, this.onUserFlushComplete.bind(this));
-      this.flushDone = done;
+      this.callbacks.flush = done;
     } else {
       done();
     }
@@ -55,9 +72,18 @@ export class ParallelTransform extends Transform {
       this.emit('error', error);
       return;
     }
-    this.push(data);
-    if (this.running === 0 && this.flushDone) {
-      this.flushDone();
+    if (this.callbacks.transform) {
+      const done = this.callbacks.transform;
+      this.callbacks.transform = undefined;
+      done(error, data);
+    } else {
+      // the callback was already called without waiting for
+      // the user transform to complete, we need to push the data
+      // now that we have it
+      this.push(data);
+    }
+    if (this.running === 0 && this.callbacks.flush) {
+      this.callbacks.flush();
     }
   }
 
