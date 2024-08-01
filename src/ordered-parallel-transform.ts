@@ -57,15 +57,15 @@ export class OrderedParallelTransform extends ParallelTransform {
   }
 
   /**
-   * It pushes the resolved data in order to the stream
+   * It pushes only resolved data in the order the corresponding chunks they originate from were received.
    * @private
    */
   private pushResolvedDataOrdered() {
-    for (const result of this.resultsQueue) {
-      if (!result.resolved) {
-        break;
-      }
-      this.push(this.resultsQueue.dequeue()?.data);
+    let current = this.resultsQueue.peek();
+    while (current?.resolved === true) {
+      this.resultsQueue.dequeue();
+      this.push(current.data);
+      current = this.resultsQueue.peek();
     }
   }
 }

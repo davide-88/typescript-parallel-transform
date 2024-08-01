@@ -38,6 +38,10 @@ export class LinkedListQueue<T> extends Queue<T> {
     return value;
   }
 
+  peek(): T | undefined {
+    return this.head?.value;
+  }
+
   size(): number {
     return this.numberOfNodes;
   }
