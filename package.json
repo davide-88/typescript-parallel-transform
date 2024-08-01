@@ -39,6 +39,7 @@
     "build": "pnpm run \"/^build:.*/\"",
     "build:bundle": "tsup-node",
     "build:type-check": "tsc",
+    "fix:lint:prettier": "prettier --cache --cache-location=.prettiercache --list-different \"./**/*.{html,css,js,cjs,jsx,ts,cts,tsx,md,json}\" --write",
     "format": "pnpm run \"/^format:.*/\"",
     "format:eslint": "eslint --cache --color ./src/**/* --fix",
     "format:prettier": "prettier --write --cache --cache-location=.prettiercache --list-different \"./**/*.{html,css,js,cjs,jsx,ts,cts,tsx,md,json}\"",

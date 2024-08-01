@@ -59,10 +59,11 @@ export class ParallelTransform extends Transform {
 
   _flush(done: TransformCallback) {
     if (this.running > 0) {
-      this.user.flush.call(this, this.onUserFlushComplete.bind(this));
+      // In case _flush is called before all the transforms are done
+      // we need to wait for the rest of the transforms to be completed
       this.callbacks.flush = done;
     } else {
-      done();
+      this.user.flush.call(this, this.onUserFlushComplete(done));
     }
   }
 
@@ -83,14 +84,20 @@ export class ParallelTransform extends Transform {
       this.push(data);
     }
     if (this.running === 0 && this.callbacks.flush) {
-      this.callbacks.flush();
+      this.user.flush.call(
+        this,
+        this.onUserFlushComplete(this.callbacks.flush),
+      );
+      this.callbacks.flush = undefined;
     }
   }
 
-  private onUserFlushComplete(error?: Error | null): void {
-    if (error) {
-      this.emit('error', error);
-      return;
-    }
+  private onUserFlushComplete(done: TransformCallback): TransformCallback {
+    return (error?: Error | null): void => {
+      if (error) {
+        this.emit('error', error);
+      }
+      return done();
+    };
   }
 }

@@ -71,19 +71,23 @@ describe('Given ParallelTransform', () => {
       it(description, async context => {
         const result: never[] = [];
         const transformMock = context.mock.fn(transform);
+        const flushMock = context.mock.fn((done: TransformCallback) => done());
         await pipeline(
           Readable.from(input),
           new ParallelTransform({
             objectMode: true,
             transform: transformMock,
+            flush: flushMock,
           }),
           collect(result),
         );
         deepEqual(result, expected.result);
         equal(transformMock.mock.callCount(), expected.transform.callCount);
+        equal(flushMock.mock.callCount(), 1);
       });
     }
   });
+
   describe('When creating a new instance in an asynchronous pipeline of objects', () => {
     const testCases = [
       {
@@ -352,6 +356,7 @@ describe('Given ParallelTransform', () => {
         const result: never[] = [];
         const asyncTransform = new AsyncIdentity(eventsDuration);
         const transformMock = context.mock.method(asyncTransform, 'transform');
+        const flushMock = context.mock.fn((done: TransformCallback) => done());
         context.mock.timers.enable({ apis: ['setTimeout'] });
         const pipelinePromise = pipeline(
           input,
@@ -365,6 +370,7 @@ describe('Given ParallelTransform', () => {
             ) => {
               asyncTransform.transform(chunk, bufferEncoding, done);
             },
+            flush: flushMock,
           }),
           collect(result),
         );
@@ -372,6 +378,7 @@ describe('Given ParallelTransform', () => {
         await pipelinePromise;
         deepEqual(result, expected.result);
         equal(transformMock.mock.callCount(), expected.transform.callCount);
+        equal(flushMock.mock.callCount(), 1);
         ok(
           asyncTransform.getMaxConcurrentCalls() <= maxConcurrency,
           `measured max concurrency ${asyncTransform.getMaxConcurrentCalls()} when ${
