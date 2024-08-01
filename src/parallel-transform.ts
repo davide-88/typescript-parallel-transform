@@ -6,13 +6,13 @@ export type ParallelTransformOptions = TransformOptions & {
 };
 
 export class ParallelTransform extends Transform {
-  private readonly user: {
+  protected readonly user: {
     transform: Exclude<TransformOptions['transform'], undefined>;
     flush: Exclude<TransformOptions['flush'], undefined>;
   };
   private readonly maxConcurrency: number;
-  private running: number = 0;
-  private readonly callbacks: {
+  protected running: number = 0;
+  protected readonly callbacks: {
     flush: TransformCallback | undefined;
     transform: TransformCallback | undefined;
   } = {
@@ -67,7 +67,7 @@ export class ParallelTransform extends Transform {
     }
   }
 
-  private onUserTransformComplete(): TransformCallback {
+  protected onUserTransformComplete(): TransformCallback {
     return (error?: Error | null, data?: never): void => {
       this.running--;
       if (error) {
@@ -94,7 +94,7 @@ export class ParallelTransform extends Transform {
     };
   }
 
-  private onUserFlushComplete(done: TransformCallback): TransformCallback {
+  protected onUserFlushComplete(done: TransformCallback): TransformCallback {
     return (error?: Error | null): void => {
       if (error) {
         this.emit('error', error);
