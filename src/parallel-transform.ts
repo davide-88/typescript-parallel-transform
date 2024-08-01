@@ -5,6 +5,10 @@ export type ParallelTransformOptions = TransformOptions & {
   maxConcurrency?: number;
 };
 
+/**
+ * A parallel transform with concurrency control that allows for
+ * concurrent transform operations.
+ */
 export class ParallelTransform extends Transform {
   protected readonly user: {
     transform: Exclude<TransformOptions['transform'], undefined>;

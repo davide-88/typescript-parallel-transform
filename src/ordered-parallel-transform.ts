@@ -18,6 +18,11 @@ export const resultContainerFactory = {
   },
 };
 
+/**
+ * A parallel transform stream that pushes resolved data
+ * in the order the corresponding chunks they originate
+ * from were received.
+ */
 export class OrderedParallelTransform extends ParallelTransform {
   private resultsQueue = new LinkedListQueue<ResultContainer>();
   constructor(options: ParallelTransformOptions) {
