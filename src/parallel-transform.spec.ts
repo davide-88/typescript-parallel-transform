@@ -10,82 +10,187 @@ import { collect } from './utils/stream/collect.js';
 
 describe('Given ParallelTransform', () => {
   describe('When creating a new instance in a synchronous pipeline of objects', () => {
-    const testCases = [
-      {
-        description:
-          'When input is an empty array, it should return an empty array',
-        input: [],
-        transform: (
-          chunk: never,
-          _: BufferEncoding,
-          done: TransformCallback,
-        ) => {
-          done(null, chunk);
-        },
-        expected: {
-          result: [],
-          transform: {
-            callCount: 0,
+    describe('When no error occurs in the transform or flush function', () => {
+      const testCases = [
+        {
+          description:
+            'When input is an empty array, it should return an empty array',
+          input: [],
+          transform: (
+            chunk: never,
+            _: BufferEncoding,
+            done: TransformCallback,
+          ) => {
+            done(null, chunk);
+          },
+          expected: {
+            result: [],
+            transform: {
+              callCount: 0,
+            },
           },
         },
-      },
-      {
-        description:
-          'When input is [1] and transform doubles the input entries, it should return a [2]',
-        input: [1],
-        transform: (
-          chunk: number,
-          _: BufferEncoding,
-          done: TransformCallback,
-        ) => {
-          done(null, chunk * 2);
-        },
-        expected: {
-          result: [2],
-          transform: {
-            callCount: 1,
+        {
+          description:
+            'When input is [1] and transform doubles the input entries, it should return a [2]',
+          input: [1],
+          transform: (
+            chunk: number,
+            _: BufferEncoding,
+            done: TransformCallback,
+          ) => {
+            done(null, chunk * 2);
+          },
+          expected: {
+            result: [2],
+            transform: {
+              callCount: 1,
+            },
           },
         },
-      },
-      {
-        description:
-          'When input is [1,2] and transform doubles the input entries, it should return a [2,4]',
-        input: [1, 2],
-        transform: (
-          chunk: number,
-          _: BufferEncoding,
-          done: TransformCallback,
-        ): void => {
-          done(null, chunk * 2);
-        },
-        expected: {
-          result: [2, 4],
-          transform: {
-            callCount: 2,
+        {
+          description:
+            'When input is [1,2] and transform doubles the input entries, it should return a [2,4]',
+          input: [1, 2],
+          transform: (
+            chunk: number,
+            _: BufferEncoding,
+            done: TransformCallback,
+          ): void => {
+            done(null, chunk * 2);
+          },
+          expected: {
+            result: [2, 4],
+            transform: {
+              callCount: 2,
+            },
           },
         },
-      },
-    ];
+      ];
 
-    for (const { input, expected, description, transform } of testCases) {
-      it(description, async context => {
-        const result: never[] = [];
-        const transformMock = context.mock.fn(transform);
-        const flushMock = context.mock.fn((done: TransformCallback) => done());
-        await pipeline(
-          Readable.from(input),
-          new ParallelTransform({
-            objectMode: true,
-            transform: transformMock,
-            flush: flushMock,
-          }),
-          collect(result),
-        );
-        deepEqual(result, expected.result);
-        equal(transformMock.mock.callCount(), expected.transform.callCount);
-        equal(flushMock.mock.callCount(), 1);
-      });
-    }
+      for (const { input, expected, description, transform } of testCases) {
+        it(description, async context => {
+          const result: never[] = [];
+          const transformMock = context.mock.fn(transform);
+          const flushMock = context.mock.fn((done: TransformCallback) =>
+            done(),
+          );
+          await pipeline(
+            Readable.from(input),
+            new ParallelTransform({
+              objectMode: true,
+              transform: transformMock,
+              flush: flushMock,
+            }),
+            collect(result),
+          );
+          deepEqual(result, expected.result);
+          equal(transformMock.mock.callCount(), expected.transform.callCount);
+          equal(flushMock.mock.callCount(), 1);
+        });
+      }
+    });
+
+    describe('When an error occurs in the transform or flush function', () => {
+      const testCases = [
+        {
+          description:
+            'When input is an empty array, it should return an empty array since the transform function is never called',
+          input: [],
+          transform: (
+            chunk: never,
+            _: BufferEncoding,
+            done: TransformCallback,
+          ) => {
+            done(new Error('some-error'), chunk);
+          },
+          flush: (done: TransformCallback) => {
+            done();
+          },
+          expected: {
+            result: [],
+            transform: {
+              callCount: 0,
+            },
+            error: undefined,
+          },
+        },
+        {
+          description:
+            'When input is [1] and the transform function passes an error to the callback, it should throw the same error',
+          input: [1],
+          transform: (
+            chunk: number,
+            _: BufferEncoding,
+            done: TransformCallback,
+          ) => {
+            done(new Error('some-error'), chunk);
+          },
+          flush: (done: TransformCallback) => {
+            done();
+          },
+          expected: {
+            result: ['does-not-matter-since-transform-throws'],
+            transform: {
+              callCount: 1,
+            },
+            error: new Error('some-error'),
+          },
+        },
+        {
+          description:
+            'When input is [1] and the flush function passes an error to the callback, it should throw the same error',
+          input: [1],
+          transform: (
+            chunk: number,
+            _: BufferEncoding,
+            done: TransformCallback,
+          ) => {
+            done(null, chunk);
+          },
+          flush: (done: TransformCallback) => {
+            done(new Error('some-error'));
+          },
+          expected: {
+            result: ['does-not-matter-since-transform-throws'],
+            transform: {
+              callCount: 1,
+            },
+            error: new Error('some-error'),
+          },
+        },
+      ];
+
+      for (const {
+        input,
+        expected,
+        description,
+        transform,
+        flush,
+      } of testCases) {
+        it(description, async context => {
+          const result: never[] = [];
+          const transformMock = context.mock.fn(transform);
+          const flushMock = context.mock.fn(flush);
+          try {
+            await pipeline(
+              Readable.from(input),
+              new ParallelTransform({
+                objectMode: true,
+                transform: transformMock,
+                flush: flushMock,
+              }),
+              collect(result),
+            );
+            deepEqual(result, expected.result);
+            equal(transformMock.mock.callCount(), expected.transform.callCount);
+            equal(flushMock.mock.callCount(), 1);
+          } catch (error) {
+            deepEqual(error, expected.error);
+          }
+        });
+      }
+    });
   });
 
   describe('When creating a new instance in an asynchronous pipeline of objects', () => {
