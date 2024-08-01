@@ -48,7 +48,7 @@ export class ParallelTransform extends Transform {
       this,
       chunk,
       encoding,
-      this.onUserTransformComplete.bind(this),
+      this.onUserTransformComplete(),
     );
     if (this.running < this.maxConcurrency) {
       done();
@@ -67,35 +67,38 @@ export class ParallelTransform extends Transform {
     }
   }
 
-  private onUserTransformComplete(error?: Error | null, data?: never): void {
-    this.running--;
-    if (error) {
-      this.emit('error', error);
-      return;
-    }
-    if (this.callbacks.transform) {
-      const done = this.callbacks.transform;
-      this.callbacks.transform = undefined;
-      done(error, data);
-    } else {
-      // the callback was already called without waiting for
-      // the user transform to complete, we need to push the data
-      // now that we have it
-      this.push(data);
-    }
-    if (this.running === 0 && this.callbacks.flush) {
-      this.user.flush.call(
-        this,
-        this.onUserFlushComplete(this.callbacks.flush),
-      );
-      this.callbacks.flush = undefined;
-    }
+  private onUserTransformComplete(): TransformCallback {
+    return (error?: Error | null, data?: never): void => {
+      this.running--;
+      if (error) {
+        this.emit('error', error);
+        return;
+      }
+      if (this.callbacks.transform) {
+        const done = this.callbacks.transform;
+        this.callbacks.transform = undefined;
+        done(error, data);
+      } else {
+        // the callback was already called without waiting for
+        // the user transform to complete, we need to push the data
+        // now that we have it
+        this.push(data);
+      }
+      if (this.running === 0 && this.callbacks.flush) {
+        this.user.flush.call(
+          this,
+          this.onUserFlushComplete(this.callbacks.flush),
+        );
+        this.callbacks.flush = undefined;
+      }
+    };
   }
 
   private onUserFlushComplete(done: TransformCallback): TransformCallback {
     return (error?: Error | null): void => {
       if (error) {
         this.emit('error', error);
+        return;
       }
       return done();
     };
