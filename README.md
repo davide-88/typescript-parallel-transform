@@ -42,30 +42,6 @@ Result: [
 ```
 
 The elapsed time is around 1 second because it processed 10 items concurrently
-and the slowest took 1 second to be processed. Moreover the order of the items
-in the result array is reversed since the computational time of each item is
-inversely proportional to its value and the input array is sorted in ascending
-order.
-
-### ParallelTransform
-
-Usage example: [Parallel Transform](src/examples/parallel-transform.ts)
-
-```bash
-npx tsx src/examples/parallel-transform.ts
-```
-
-Running this example will output something similar to this:
-
-```
-Elapsed time: 1004.164841ms
-Result: [
-  10, 9, 8, 7, 6,
-   5, 4, 3, 2, 1
-]
-```
-
-The elapsed time is around 1 second because it processed 10 items concurrently
 (the default max concurrency is 16) and the slowest took 1 second to be
 processed. Moreover the order of the items in the result array is reversed since
 the computational time of each item is inversely proportional to its value and
