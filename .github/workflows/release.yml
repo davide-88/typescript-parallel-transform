@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to release on'
+        required: false
+        default: 'main'
 
 jobs:
   release:
