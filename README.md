@@ -47,7 +47,7 @@ processed. Moreover the order of the items in the result array is reversed since
 the computational time of each item is inversely proportional to its value and
 the input array is sorted in ascending order.
 
-### ParallelTransform
+### OrderedParallelTransform
 
 Usage example:
 [Ordered parallel Transform](src/examples/ordered-parallel-transform.ts)
