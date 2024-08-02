@@ -40,16 +40,14 @@ export class OrderedParallelTransform extends ParallelTransform {
       }
       resultContainer.data = data;
       resultContainer.resolved = true;
-      if (this.callbacks.transform) {
+      const pushedDataCount = this.pushResolvedDataOrdered();
+      // The delayed transform callback has to be called only if the data was pushed.
+      // Otherwise the transform concurrency would be capped to the max concurrency
+      // but the size of the queue would exceed the max concurrency.
+      if (this.callbacks.transform && pushedDataCount > 0) {
         const done = this.callbacks.transform;
         this.callbacks.transform = undefined;
-        this.pushResolvedDataOrdered();
         done();
-      } else {
-        // the callback was already called without waiting for
-        // the user transform to complete, we need to push the data
-        // in order if resolved in the proper order
-        this.pushResolvedDataOrdered();
       }
       if (this.running === 0 && this.callbacks.flush) {
         this.user.flush.call(
@@ -64,13 +62,17 @@ export class OrderedParallelTransform extends ParallelTransform {
   /**
    * It pushes only resolved data in the order the corresponding chunks they originate from were received.
    * @private
+   * @returns The number of pushed data.
    */
-  private pushResolvedDataOrdered() {
+  private pushResolvedDataOrdered(): number {
+    let pushedDataCount = 0;
     let current = this.resultsQueue.peek();
     while (current?.resolved === true) {
       this.resultsQueue.dequeue();
       this.push(current.data);
+      pushedDataCount++;
       current = this.resultsQueue.peek();
     }
+    return pushedDataCount;
   }
 }

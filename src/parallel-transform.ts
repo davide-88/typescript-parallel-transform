@@ -14,7 +14,7 @@ export class ParallelTransform extends Transform {
     transform: Exclude<TransformOptions['transform'], undefined>;
     flush: Exclude<TransformOptions['flush'], undefined>;
   };
-  private readonly maxConcurrency: number;
+  protected readonly maxConcurrency: number;
   protected running: number = 0;
   protected readonly callbacks: {
     flush: TransformCallback | undefined;
