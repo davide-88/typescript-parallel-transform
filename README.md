@@ -70,6 +70,46 @@ The elapsed time is around 1 second because it processed 10 items concurrently
 and the slowest took 1 second to be processed. Moreover the order of the items
 in the result array is equal to the input one.
 
+### ParallelTransformFactory
+
+Usage example:
+[Parallel Transform Factory](src/examples/parallel-transform-factory.ts)
+
+```bash
+npx tsx src/examples/parallel-transform-factory.ts --ordered
+```
+
+Since we selected the ordered parallel transform implementation by passing the
+`---ordered` parameter, the output will be similar to the ordered example:
+
+```
+Elapsed time: 1007.248033ms
+Result: [
+  1, 2, 3, 4,  5,
+  6, 7, 8, 9, 10
+]
+```
+
+### ParallelTransformFactory (Promisified)
+
+Usage example:
+[Parallel Transform Factory (promisified)](src/examples/promisified-parallel-transform-factory.ts)
+
+```bash
+npx tsx src/examples/promisified-parallel-transform-factory.ts --ordered
+```
+
+Since we selected the ordered parallel transform implementation by passing the
+`---ordered` parameter, the output will be similar to the ordered example:
+
+```
+Elapsed time: 1006.521075ms
+Result: [
+  1, 2, 3, 4,  5,
+  6, 7, 8, 9, 10
+]
+```
+
 ## License
 
 Licensed under [MIT License](LICENSE.md).
