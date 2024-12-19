@@ -38,6 +38,12 @@
       "groupName": "commitlint",
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
+    },
+    {
+      "matchPackagePatterns": ["@tsconfig/node-lts", "@types/node", "node"],
+      "groupName": "nodeJS",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
     }
   ]
 }
