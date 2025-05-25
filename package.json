@@ -59,7 +59,7 @@
     "@types/node": "20.17.50",
     "eslint": "9.27.0",
     "fast-glob": "3.3.3",
-    "globals": "16.1.0",
+    "globals": "16.2.0",
     "husky": "9.1.7",
     "lint-staged": "16.0.0",
     "prettier": "3.5.3",
