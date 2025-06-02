@@ -4,9 +4,9 @@ import { argv, cwd, exit, hrtime, stdout } from 'node:process';
 import { PassThrough } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { run } from 'node:test';
+import { spec as Spec } from 'node:test/reporters';
 import { inspect, parseArgs } from 'node:util';
 import fastGlobAsync from 'fast-glob';
-import { spec as Spec } from 'node:test/reporters';
 
 const configTestStream = ({ files, watch, timeout, concurrency }) => {
   const testStream = run({
