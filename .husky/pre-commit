@@ -1,3 +1,3 @@
-npx lint-staged
+npx pnpm lint-staged
 npx pnpm build
 npx pnpm test
