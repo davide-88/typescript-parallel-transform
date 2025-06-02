@@ -4,7 +4,7 @@ export default defineConfig(options => {
   return {
     entry: ['src/index.ts'],
     outDir: 'lib',
-    target: 'node20',
+    target: 'node22',
     format: ['esm', 'cjs'],
     dts: true,
     shims: true,
