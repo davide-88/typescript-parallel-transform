@@ -16,34 +16,34 @@
   "prHourlyLimit": 12,
   "packageRules": [
     {
-      "matchPackagePatterns": ["^@types/"],
       "groupName": "@types",
       "matchUpdateTypes": ["minor", "patch"],
-      "automerge": true
+      "automerge": true,
+      "matchPackageNames": ["/^@types//"]
     },
     {
-      "matchPackagePatterns": ["eslint", "^@eslint"],
       "groupName": "eslint",
       "matchUpdateTypes": ["minor", "patch"],
-      "automerge": true
+      "automerge": true,
+      "matchPackageNames": ["/eslint/", "/^@eslint/"]
     },
     {
-      "matchPackagePatterns": ["prettier"],
       "groupName": "prettier",
       "matchUpdateTypes": ["minor", "patch"],
-      "automerge": true
+      "automerge": true,
+      "matchPackageNames": ["/prettier/"]
     },
     {
-      "matchPackagePatterns": ["commitlint"],
       "groupName": "commitlint",
       "matchUpdateTypes": ["minor", "patch"],
-      "automerge": true
+      "automerge": true,
+      "matchPackageNames": ["/commitlint/"]
     },
     {
-      "matchPackagePatterns": ["@tsconfig/node-lts", "@types/node", "node"],
       "groupName": "nodeJS",
       "matchUpdateTypes": ["minor", "patch"],
-      "automerge": true
+      "automerge": true,
+      "matchPackageNames": ["/@tsconfig/node-lts/", "/@types/node/", "/node/"]
     }
   ]
 }
