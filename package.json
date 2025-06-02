@@ -47,8 +47,8 @@
     "lint:eslint": "eslint --cache --color ./src/**/*",
     "lint:prettier": "prettier --cache --cache-location=.prettiercache --list-different \"./**/*.{html,css,js,cjs,jsx,ts,cts,tsx,md,json}\"",
     "prepare": "husky",
-    "test": "node --import tsx --test src/**/*.spec.ts",
-    "test:debug": "node --inspect-wait --import tsx --test src/**/*.spec.ts"
+    "test": "node --import tsx --test-reporter=spec --test $(find ./src -name \"*.spec.ts\")",
+    "test:debug": "node --inspect-wait --import tsx --test $(find ./src -name \"*.spec.ts\")"
   },
   "devDependencies": {
     "@commitlint/cli": "19.8.1",
