@@ -19,7 +19,7 @@ importers:
         version: 9.29.0
       '@ianvs/prettier-plugin-sort-imports':
         specifier: 4.4.2
-        version: 4.4.2(prettier@3.6.0)
+        version: 4.4.2(prettier@3.6.1)
       '@tsconfig/node-lts':
         specifier: 22.0.2
         version: 22.0.2
@@ -42,11 +42,11 @@ importers:
         specifier: 16.1.0
         version: 16.1.0
       prettier:
-        specifier: 3.6.0
-        version: 3.6.0
+        specifier: 3.6.1
+        version: 3.6.1
       prettier-plugin-pkg:
         specifier: 0.21.1
-        version: 0.21.1(prettier@3.6.0)
+        version: 0.21.1(prettier@3.6.1)
       semantic-release:
         specifier: 24.2.5
         version: 24.2.5(typescript@5.8.3)
@@ -1863,8 +1863,8 @@ packages:
     peerDependencies:
       prettier: ^3.0.3
 
-  prettier@3.6.0:
-    resolution: {integrity: sha512-ujSB9uXHJKzM/2GBuE0hBOUgC77CN3Bnpqa+g80bkv3T3A93wL/xlzDATHhnhkzifz/UE2SNOvmbTz5hSkDlHw==}
+  prettier@3.6.1:
+    resolution: {integrity: sha512-5xGWRa90Sp2+x1dQtNpIpeOQpTDBs9cZDmA/qs2vDNN2i18PdapqY7CmBeyLlMuGqXJRIOPaCaVZTLNQRWUH/A==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -2641,13 +2641,13 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@ianvs/prettier-plugin-sort-imports@4.4.2(prettier@3.6.0)':
+  '@ianvs/prettier-plugin-sort-imports@4.4.2(prettier@3.6.1)':
     dependencies:
       '@babel/generator': 7.27.3
       '@babel/parser': 7.27.4
       '@babel/traverse': 7.27.4
       '@babel/types': 7.27.3
-      prettier: 3.6.0
+      prettier: 3.6.1
       semver: 7.7.2
     transitivePeerDependencies:
       - supports-color
@@ -4034,11 +4034,11 @@ snapshots:
 
   prelude-ls@1.2.1: {}
 
-  prettier-plugin-pkg@0.21.1(prettier@3.6.0):
+  prettier-plugin-pkg@0.21.1(prettier@3.6.1):
     dependencies:
-      prettier: 3.6.0
+      prettier: 3.6.1
 
-  prettier@3.6.0: {}
+  prettier@3.6.1: {}
 
   pretty-ms@9.2.0:
     dependencies:
