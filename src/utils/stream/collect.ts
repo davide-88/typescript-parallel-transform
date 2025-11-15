@@ -1,9 +1,9 @@
 import { Writable, type TransformCallback } from 'node:stream';
 
-export const collect = (result: never[]): Writable =>
+export const collect = <Item>(result: Item[]): Writable =>
   new Writable({
     objectMode: true,
-    write(chunk: never, _: BufferEncoding, done: TransformCallback) {
+    write(chunk: Item, _: BufferEncoding, done: TransformCallback) {
       result.push(chunk);
       done();
     },

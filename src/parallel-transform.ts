@@ -26,7 +26,7 @@ export class ParallelTransform extends Transform {
 
   constructor({
     transform = (
-      chunk: never,
+      chunk: unknown,
       _: BufferEncoding,
       done: TransformCallback,
     ): void => done(null, chunk),
