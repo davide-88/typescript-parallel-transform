@@ -21,6 +21,10 @@ jobs:
   release:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      id-token: write # necessary for OIDC/trusted publishing
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -64,5 +68,4 @@ jobs:
       - name: Run semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npx semantic-release
