@@ -54,7 +54,7 @@
     "@commitlint/cli": "20.4.1",
     "@commitlint/config-conventional": "20.4.1",
     "@eslint/js": "9.39.2",
-    "@ianvs/prettier-plugin-sort-imports": "4.7.0",
+    "@ianvs/prettier-plugin-sort-imports": "4.7.1",
     "@tsconfig/node-lts": "24.0.0",
     "@types/node": "22.19.8",
     "eslint": "9.39.2",
