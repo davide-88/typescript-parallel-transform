@@ -48,6 +48,7 @@
     "lint:prettier": "prettier --cache --cache-location=.prettiercache --list-different \"./**/*.{html,css,js,cjs,jsx,ts,cts,tsx,md,json}\"",
     "prepare": "husky",
     "test": "node --import tsx --test-reporter=spec --test './src/**/*.spec.ts' './src/*.spec.ts'",
+    "test:coverage": "c8 node --import tsx --test-reporter=spec --test './src/**/*.spec.ts' './src/*.spec.ts'",
     "test:debug": "node --inspect-wait --import tsx --test './src/**/*.spec.ts' './src/*.spec.ts'"
   },
   "devDependencies": {
@@ -57,6 +58,7 @@
     "@ianvs/prettier-plugin-sort-imports": "4.7.0",
     "@tsconfig/node-lts": "24.0.0",
     "@types/node": "22.19.7",
+    "c8": "^11.0.0",
     "eslint": "9.39.2",
     "fast-glob": "3.3.3",
     "globals": "17.3.0",
@@ -74,6 +76,22 @@
     "provenance": true
   },
   "sideEffects": false,
+  "c8": {
+    "all": true,
+    "src": [
+      "src"
+    ],
+    "exclude": [
+      "src/**/*.spec.ts",
+      "src/examples/**"
+    ],
+    "reporter": [
+      "text",
+      "lcov",
+      "json-summary"
+    ],
+    "report-dir": "coverage"
+  },
   "commitlint": {
     "extends": [
       "@commitlint/config-conventional"

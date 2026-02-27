@@ -52,5 +52,30 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      - name: Test with coverage
+        if: matrix.node-version == '22.x'
+        run: pnpm run test:coverage
+
       - name: Test
+        if: matrix.node-version != '22.x'
         run: pnpm run test
+
+      - name: Extract coverage percentage
+        id: coverage
+        if: matrix.node-version == '22.x' && github.event_name == 'push' && github.ref == 'refs/heads/development'
+        run: |
+          COVERAGE=$(jq '.total.lines.pct' coverage/coverage-summary.json)
+          echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
+
+      - name: Update coverage badge
+        if: matrix.node-version == '22.x' && github.event_name == 'push' && github.ref == 'refs/heads/development'
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: ${{ vars.GIST_ID }}
+          filename: coverage-badge.json
+          label: coverage
+          message: ${{ steps.coverage.outputs.coverage }}%
+          valColorRange: ${{ steps.coverage.outputs.coverage }}
+          minColorRange: 0
+          maxColorRange: 100
