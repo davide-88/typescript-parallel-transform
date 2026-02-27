@@ -1,5 +1,7 @@
 # typescript-parallel-transform
 
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/davide-88/65d2902ee8ce727a2377e6313486408f/raw/coverage-badge.json)](https://github.com/davide-88/typescript-parallel-transform)
+
 A typescript first implementation of a Node.js
 [Transform stream](https://nodejs.org/api/stream.html#class-streamtransform)
 with concurrency control.
