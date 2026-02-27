@@ -91,6 +91,16 @@ describe('Given ParallelTransform', () => {
       }
     });
 
+    it('When no transform is provided, it should use the default passthrough transform', async () => {
+      const result: unknown[] = [];
+      await pipeline(
+        Readable.from([1, 2, 3]),
+        new ParallelTransform({ objectMode: true }),
+        collect(result),
+      );
+      deepEqual(result, [1, 2, 3]);
+    });
+
     describe('When an error occurs in the transform or flush function', () => {
       const testCases = [
         {

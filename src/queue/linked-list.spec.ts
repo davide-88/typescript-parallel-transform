@@ -40,4 +40,13 @@ describe('Given LinkedListQueue', () => {
       equal(queue.dequeue(), undefined);
     });
   });
+
+  it('When constructed with initial values, it should contain those values in order', () => {
+    const queue = new LinkedListQueue([1, 2, 3]);
+    equal(queue.size(), 3);
+    equal(queue.dequeue(), 1);
+    equal(queue.dequeue(), 2);
+    equal(queue.dequeue(), 3);
+    equal(queue.dequeue(), undefined);
+  });
 });
