@@ -52,14 +52,14 @@
     "test:debug": "node --inspect-wait --import tsx --test './src/**/*.spec.ts' './src/*.spec.ts'"
   },
   "devDependencies": {
-    "@commitlint/cli": "20.4.0",
-    "@commitlint/config-conventional": "20.4.0",
-    "@eslint/js": "9.39.2",
-    "@ianvs/prettier-plugin-sort-imports": "4.7.0",
+    "@commitlint/cli": "20.4.2",
+    "@commitlint/config-conventional": "20.4.2",
+    "@eslint/js": "9.39.3",
+    "@ianvs/prettier-plugin-sort-imports": "4.7.1",
     "@tsconfig/node-lts": "24.0.0",
-    "@types/node": "22.19.7",
+    "@types/node": "22.19.13",
     "c8": "^11.0.0",
-    "eslint": "9.39.2",
+    "eslint": "9.39.3",
     "fast-glob": "3.3.3",
     "globals": "17.3.0",
     "husky": "9.1.7",
@@ -70,7 +70,7 @@
     "tsdown": "0.20.1",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.54.0"
+    "typescript-eslint": "8.56.1"
   },
   "publishConfig": {
     "provenance": true
