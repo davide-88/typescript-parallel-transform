@@ -8,7 +8,129 @@ import { AsyncIdentity } from './utils/async-identity.js';
 import { eventsSimulation } from './utils/events-simulation.js';
 import { collect } from './utils/stream/collect.js';
 
+describe('Given ParallelTransform with ratePerSecond', () => {
+  it('should limit the number of transform calls per second', async context => {
+    context.mock.timers.enable({ apis: ['setInterval'] });
+    const callTimestamps: number[] = [];
+    let currentTime = 0;
+    const result: number[] = [];
+
+    const pipelinePromise = pipeline(
+      Readable.from([1, 2, 3, 4]),
+      new ParallelTransform({
+        objectMode: true,
+        ratePerSecond: 2,
+        transform: (
+          chunk: number,
+          _: BufferEncoding,
+          done: TransformCallback,
+        ) => {
+          callTimestamps.push(currentTime);
+          done(null, chunk);
+        },
+      }),
+      collect(result),
+    );
+
+    // First 2 should fire immediately (window 0)
+    await new Promise(r => process.nextTick(r));
+    equal(callTimestamps.length, 2);
+
+    // Tick the interval to release the next window
+    currentTime = 1000;
+    context.mock.timers.tick(1000);
+    await new Promise(r => process.nextTick(r));
+
+    await pipelinePromise;
+    deepEqual(callTimestamps, [0, 0, 1000, 1000]);
+    deepEqual(result, [1, 2, 3, 4]);
+  });
+
+  it('should apply both maxConcurrency and ratePerSecond together', async context => {
+    context.mock.timers.enable({ apis: ['setInterval'] });
+    const callTimestamps: number[] = [];
+    let currentTime = 0;
+    const result: number[] = [];
+
+    const pipelinePromise = pipeline(
+      Readable.from([1, 2, 3, 4, 5, 6]),
+      new ParallelTransform({
+        objectMode: true,
+        maxConcurrency: 3,
+        ratePerSecond: 2,
+        transform: (
+          chunk: number,
+          _: BufferEncoding,
+          done: TransformCallback,
+        ) => {
+          callTimestamps.push(currentTime);
+          done(null, chunk);
+        },
+      }),
+      collect(result),
+    );
+
+    // ratePerSecond=2 limits to 2 per window despite maxConcurrency=3
+    await new Promise(r => process.nextTick(r));
+    equal(callTimestamps.length, 2);
+
+    currentTime = 1000;
+    context.mock.timers.tick(1000);
+    await new Promise(r => process.nextTick(r));
+
+    currentTime = 2000;
+    context.mock.timers.tick(1000);
+    await new Promise(r => process.nextTick(r));
+
+    await pipelinePromise;
+    deepEqual(callTimestamps, [0, 0, 1000, 1000, 2000, 2000]);
+    deepEqual(result.sort(), [1, 2, 3, 4, 5, 6]);
+  });
+});
+
 describe('Given ParallelTransform', () => {
+  it('should initiate the user transform before signaling readiness for the next chunk', async () => {
+    const order: string[] = [];
+    const result: number[] = [];
+
+    class InstrumentedParallelTransform extends ParallelTransform {
+      override _transform(
+        chunk: unknown,
+        encoding: BufferEncoding,
+        done: TransformCallback,
+      ): void {
+        super._transform(
+          chunk,
+          encoding,
+          (...args: Parameters<TransformCallback>) => {
+            order.push(`done-${chunk}`);
+            done(...args);
+          },
+        );
+      }
+    }
+
+    await pipeline(
+      Readable.from([1]),
+      new InstrumentedParallelTransform({
+        objectMode: true,
+        maxConcurrency: 16,
+        transform: (
+          chunk: number,
+          _: BufferEncoding,
+          done: TransformCallback,
+        ) => {
+          order.push(`transform-${chunk}`);
+          done(null, chunk);
+        },
+      }),
+      collect(result),
+    );
+
+    deepEqual(order, ['transform-1', 'done-1']);
+    deepEqual(result, [1]);
+  });
+
   describe('When creating a new instance in a synchronous pipeline of objects', () => {
     describe('When no error occurs in the transform or flush function', () => {
       const testCases = [
@@ -17,7 +139,7 @@ describe('Given ParallelTransform', () => {
             'When input is an empty array, it should return an empty array',
           input: [],
           transform: (
-            chunk: never,
+            chunk: number,
             _: BufferEncoding,
             done: TransformCallback,
           ) => {
@@ -108,7 +230,7 @@ describe('Given ParallelTransform', () => {
             'When input is an empty array, it should return an empty array since the transform function is never called',
           input: [],
           transform: (
-            chunk: never,
+            chunk: number,
             _: BufferEncoding,
             done: TransformCallback,
           ) => {
@@ -479,7 +601,7 @@ describe('Given ParallelTransform', () => {
             objectMode: true,
             maxConcurrency,
             transform: (
-              chunk: never,
+              chunk: number,
               bufferEncoding: BufferEncoding,
               done: TransformCallback,
             ) => {

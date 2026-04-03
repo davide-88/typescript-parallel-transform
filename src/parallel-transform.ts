@@ -1,8 +1,11 @@
 import { Transform } from 'node:stream';
 import type { TransformCallback, TransformOptions } from 'node:stream';
 
+import { FixedWindowRateLimiter } from './rate-limiter.js';
+
 export type ParallelTransformOptions = TransformOptions & {
   maxConcurrency?: number;
+  ratePerSecond?: number;
 };
 
 /**
@@ -14,7 +17,8 @@ export class ParallelTransform extends Transform {
     transform: Exclude<TransformOptions['transform'], undefined>;
     flush: Exclude<TransformOptions['flush'], undefined>;
   };
-  protected readonly maxConcurrency: number;
+  protected readonly _maxConcurrency: number;
+  protected readonly _rateLimiter: FixedWindowRateLimiter | undefined;
   protected running: number = 0;
   protected readonly callbacks: {
     flush: TransformCallback | undefined;
@@ -24,22 +28,34 @@ export class ParallelTransform extends Transform {
     transform: undefined,
   };
 
-  constructor({
-    transform = (
-      chunk: unknown,
-      _: BufferEncoding,
-      done: TransformCallback,
-    ): void => done(null, chunk),
-    flush = (done: TransformCallback): void => done(null),
-    maxConcurrency = 16,
-    ...options
-  }: ParallelTransformOptions) {
-    super(options);
+  constructor(options: ParallelTransformOptions) {
+    const {
+      transform = (
+        chunk: unknown,
+        _: BufferEncoding,
+        done: TransformCallback,
+      ): void => done(null, chunk),
+      flush = (done: TransformCallback): void => done(null),
+      ...rest
+    } = options;
+    const { ratePerSecond, maxConcurrency = 16, ...streamOptions } = rest;
+    super(streamOptions);
     this.user = {
       transform,
       flush,
     };
-    this.maxConcurrency = maxConcurrency;
+    this._maxConcurrency = maxConcurrency;
+    this._rateLimiter = ratePerSecond
+      ? new FixedWindowRateLimiter(ratePerSecond)
+      : undefined;
+  }
+
+  get maxConcurrency(): number {
+    return this._maxConcurrency;
+  }
+
+  get ratePerSecond(): number | undefined {
+    return this._rateLimiter?.ratePerSecond;
   }
 
   _transform(
@@ -48,17 +64,32 @@ export class ParallelTransform extends Transform {
     done: TransformCallback,
   ): void {
     this.running++;
-    this.user.transform.call(
-      this,
-      chunk,
-      encoding,
-      this.onUserTransformComplete(),
-    );
-    if (this.running < this.maxConcurrency) {
+
+    const startUserTransform = () => {
+      this.user.transform.call(
+        this,
+        chunk,
+        encoding,
+        this.onUserTransformComplete(),
+      );
+    };
+
+    if (this._rateLimiter) {
+      this._rateLimiter.acquire(startUserTransform);
+    } else {
+      startUserTransform();
+    }
+
+    if (this.running < this._maxConcurrency) {
       done();
     } else {
       this.callbacks.transform = done;
     }
+  }
+
+  _destroy(error: Error | null, callback: (error: Error | null) => void): void {
+    this._rateLimiter?.destroy();
+    callback(error);
   }
 
   _flush(done: TransformCallback) {

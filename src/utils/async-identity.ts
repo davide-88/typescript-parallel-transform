@@ -1,13 +1,13 @@
 import type { TransformCallback } from 'node:stream';
 
-export class AsyncIdentity {
+export class AsyncIdentity<T> {
   private transformCalls: number = 0;
   private concurrentCalls: number = 0;
   private maxConcurrentCalls: number = 0;
   private timeout: number | undefined = undefined;
   constructor(private readonly timeouts: number[]) {}
 
-  transform(chunk: never, _: BufferEncoding, done: TransformCallback): void {
+  transform(chunk: T, _: BufferEncoding, done: TransformCallback): void {
     this.concurrentCalls++;
     this.maxConcurrentCalls = Math.max(
       this.concurrentCalls,

@@ -8,16 +8,70 @@ import { AsyncIdentity } from './utils/async-identity.js';
 import { eventsSimulation } from './utils/events-simulation.js';
 import { collect } from './utils/stream/collect.js';
 
+describe('Given OrderedParallelTransform with ratePerSecond', () => {
+  it('should limit transform calls per second and preserve input order', async context => {
+    context.mock.timers.enable({ apis: ['setInterval'] });
+    const callTimestamps: number[] = [];
+    let currentTime = 0;
+    const result: number[] = [];
+
+    const pipelinePromise = pipeline(
+      Readable.from([1, 2, 3, 4]),
+      new OrderedParallelTransform({
+        objectMode: true,
+        ratePerSecond: 2,
+        transform: (
+          chunk: number,
+          _: BufferEncoding,
+          done: TransformCallback,
+        ) => {
+          callTimestamps.push(currentTime);
+          done(null, chunk);
+        },
+      }),
+      collect(result),
+    );
+
+    // First 2 should fire immediately (window 0)
+    await new Promise(r => process.nextTick(r));
+    equal(callTimestamps.length, 2);
+
+    // Tick the interval to release the next window
+    currentTime = 1000;
+    context.mock.timers.tick(1000);
+    await new Promise(r => process.nextTick(r));
+
+    await pipelinePromise;
+    deepEqual(callTimestamps, [0, 0, 1000, 1000]);
+    // Order should be preserved
+    deepEqual(result, [1, 2, 3, 4]);
+  });
+});
+
 describe('Given OrderedParallelTransform', () => {
   describe('When creating a new instance in a synchronous pipeline of objects', () => {
     describe('When no error occurs in the transform or flush function', () => {
-      const testCases = [
+      const testCases: {
+        description: string;
+        input: number[];
+        transform: (
+          chunk: number,
+          _: BufferEncoding,
+          done: TransformCallback,
+        ) => void;
+        expected: {
+          result: number[];
+          transform: {
+            callCount: number;
+          };
+        };
+      }[] = [
         {
           description:
             'When input is an empty array, it should return an empty array',
           input: [],
           transform: (
-            chunk: never,
+            chunk: number,
             _: BufferEncoding,
             done: TransformCallback,
           ) => {
@@ -71,7 +125,14 @@ describe('Given OrderedParallelTransform', () => {
       for (const { input, expected, description, transform } of testCases) {
         it(description, async context => {
           const result: never[] = [];
-          const transformMock = context.mock.fn(transform);
+          const transformMock =
+            context.mock.fn<
+              (
+                chunk: number,
+                _: BufferEncoding,
+                done: TransformCallback,
+              ) => void
+            >(transform);
           const flushMock = context.mock.fn((done: TransformCallback) =>
             done(),
           );
