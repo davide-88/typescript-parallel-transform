@@ -19,7 +19,8 @@ export class ParallelTransform extends Transform {
   };
   protected readonly _maxConcurrency: number;
   protected readonly _rateLimiter: FixedWindowRateLimiter | undefined;
-  protected running: number = 0;
+  /** Counts chunks accepted into the pipeline (queued or actively processing). */
+  protected inflight: number = 0;
   protected readonly callbacks: {
     flush: TransformCallback | undefined;
     transform: TransformCallback | undefined;
@@ -63,7 +64,7 @@ export class ParallelTransform extends Transform {
     encoding: BufferEncoding,
     done: TransformCallback,
   ): void {
-    this.running++;
+    this.inflight++;
 
     const startUserTransform = () => {
       this.user.transform.call(
@@ -80,7 +81,7 @@ export class ParallelTransform extends Transform {
       startUserTransform();
     }
 
-    if (this.running < this._maxConcurrency) {
+    if (this.inflight < this._maxConcurrency) {
       done();
     } else {
       this.callbacks.transform = done;
@@ -93,7 +94,7 @@ export class ParallelTransform extends Transform {
   }
 
   _flush(done: TransformCallback) {
-    if (this.running > 0) {
+    if (this.inflight > 0) {
       // In case _flush is called before all the transforms are done
       // we need to wait for the rest of the transforms to be completed
       this.callbacks.flush = done;
@@ -104,7 +105,7 @@ export class ParallelTransform extends Transform {
 
   protected onUserTransformComplete(): TransformCallback {
     return (error?: Error | null, data?: never): void => {
-      this.running--;
+      this.inflight--;
       if (error) {
         this.emit('error', error);
         return;
@@ -119,7 +120,7 @@ export class ParallelTransform extends Transform {
         // now that we have it
         this.push(data);
       }
-      if (this.running === 0 && this.callbacks.flush) {
+      if (this.inflight === 0 && this.callbacks.flush) {
         this.user.flush.call(
           this,
           this.onUserFlushComplete(this.callbacks.flush),

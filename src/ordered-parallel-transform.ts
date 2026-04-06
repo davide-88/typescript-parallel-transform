@@ -33,7 +33,7 @@ export class OrderedParallelTransform extends ParallelTransform {
     const resultContainer = resultContainerFactory.create();
     this.resultsQueue.enqueue(resultContainer);
     return (error?: Error | null, data?: never): void => {
-      this.running--;
+      this.inflight--;
       if (error) {
         this.emit('error', error);
         return;
@@ -49,7 +49,7 @@ export class OrderedParallelTransform extends ParallelTransform {
         this.callbacks.transform = undefined;
         done();
       }
-      if (this.running === 0 && this.callbacks.flush) {
+      if (this.inflight === 0 && this.callbacks.flush) {
         this.user.flush.call(
           this,
           this.onUserFlushComplete(this.callbacks.flush),
