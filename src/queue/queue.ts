@@ -4,6 +4,7 @@ export abstract class Queue<T> implements Iterable<T> {
   abstract size(): number;
   abstract [Symbol.iterator](): Iterator<T>;
   abstract peek(): T | undefined;
+  abstract clear(): void;
   toArray(): T[] {
     const array: T[] = [];
     for (const value of this) {

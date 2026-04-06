@@ -1,6 +1,8 @@
+import { LinkedListQueue } from './queue/linked-list-queue.js';
+
 export class FixedWindowRateLimiter {
   private startsInCurrentWindow: number = 0;
-  private readonly pendingCallbacks: (() => void)[] = [];
+  private readonly pendingCallbacks = new LinkedListQueue<() => void>();
   private timer: ReturnType<typeof setInterval> | undefined = undefined;
 
   constructor(readonly ratePerSecond: number) {}
@@ -11,7 +13,7 @@ export class FixedWindowRateLimiter {
       this.ensureTimerRunning();
       onAllowed();
     } else {
-      this.pendingCallbacks.push(onAllowed);
+      this.pendingCallbacks.enqueue(onAllowed);
       this.ensureTimerRunning();
     }
   }
@@ -21,7 +23,7 @@ export class FixedWindowRateLimiter {
       clearInterval(this.timer);
       this.timer = undefined;
     }
-    this.pendingCallbacks.length = 0;
+    this.pendingCallbacks.clear();
   }
 
   private ensureTimerRunning(): void {
@@ -35,14 +37,14 @@ export class FixedWindowRateLimiter {
   private onWindowReset(): void {
     this.startsInCurrentWindow = 0;
     while (
-      this.pendingCallbacks.length > 0 &&
+      this.pendingCallbacks.size() > 0 &&
       this.startsInCurrentWindow < this.ratePerSecond
     ) {
       this.startsInCurrentWindow++;
-      const cb = this.pendingCallbacks.shift()!;
+      const cb = this.pendingCallbacks.dequeue()!;
       cb();
     }
-    if (this.pendingCallbacks.length === 0) {
+    if (this.pendingCallbacks.size() === 0) {
       clearInterval(this.timer);
       this.timer = undefined;
     }
