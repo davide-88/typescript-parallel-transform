@@ -95,9 +95,12 @@ export class ParallelTransform extends Transform {
     }
   }
 
-  _destroy(error: Error | null, callback: (error: Error | null) => void): void {
+  _destroy(
+    error: Error | null,
+    callback: (error?: Error | null) => void,
+  ): void {
     this._rateLimiter?.destroy();
-    callback(error);
+    super._destroy(error, callback);
   }
 
   _flush(done: TransformCallback) {

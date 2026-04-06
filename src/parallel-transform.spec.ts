@@ -88,6 +88,54 @@ describe('Given ParallelTransform with rateLimit', () => {
   });
 });
 
+describe('Given ParallelTransform _destroy', () => {
+  it('should call super._destroy and emit close event', async () => {
+    const stream = new ParallelTransform({
+      objectMode: true,
+      transform: (
+        chunk: number,
+        _: BufferEncoding,
+        done: TransformCallback,
+      ) => {
+        done(null, chunk);
+      },
+    });
+
+    const closePromise = new Promise<void>(resolve => {
+      stream.on('close', resolve);
+    });
+
+    stream.destroy();
+    await closePromise;
+
+    ok(stream.destroyed, 'stream should be marked as destroyed');
+  });
+
+  it('should propagate the error through super._destroy', async () => {
+    const stream = new ParallelTransform({
+      objectMode: true,
+      transform: (
+        chunk: number,
+        _: BufferEncoding,
+        done: TransformCallback,
+      ) => {
+        done(null, chunk);
+      },
+    });
+
+    const destroyError = new Error('test-destroy-error');
+    const errorPromise = new Promise<Error>(resolve => {
+      stream.on('error', resolve);
+    });
+
+    stream.destroy(destroyError);
+    const emittedError = await errorPromise;
+
+    equal(emittedError, destroyError);
+    ok(stream.destroyed, 'stream should be marked as destroyed');
+  });
+});
+
 describe('Given ParallelTransform', () => {
   it('should initiate the user transform before signaling readiness for the next chunk', async () => {
     const order: string[] = [];
