@@ -8,8 +8,8 @@ import { AsyncIdentity } from './utils/async-identity.js';
 import { eventsSimulation } from './utils/events-simulation.js';
 import { collect } from './utils/stream/collect.js';
 
-describe('Given ParallelTransform with ratePerSecond', () => {
-  it('should limit the number of transform calls per second', async context => {
+describe('Given ParallelTransform with rateLimit', () => {
+  it('should limit the number of transform calls per window', async context => {
     context.mock.timers.enable({ apis: ['setInterval'] });
     const callTimestamps: number[] = [];
     let currentTime = 0;
@@ -19,7 +19,7 @@ describe('Given ParallelTransform with ratePerSecond', () => {
       Readable.from([1, 2, 3, 4]),
       new ParallelTransform({
         objectMode: true,
-        ratePerSecond: 2,
+        rateLimit: { maxPerWindow: 2 },
         transform: (
           chunk: number,
           _: BufferEncoding,
@@ -46,7 +46,7 @@ describe('Given ParallelTransform with ratePerSecond', () => {
     deepEqual(result, [1, 2, 3, 4]);
   });
 
-  it('should apply both maxConcurrency and ratePerSecond together', async context => {
+  it('should apply both maxConcurrency and rateLimit together', async context => {
     context.mock.timers.enable({ apis: ['setInterval'] });
     const callTimestamps: number[] = [];
     let currentTime = 0;
@@ -57,7 +57,7 @@ describe('Given ParallelTransform with ratePerSecond', () => {
       new ParallelTransform({
         objectMode: true,
         maxConcurrency: 3,
-        ratePerSecond: 2,
+        rateLimit: { maxPerWindow: 2 },
         transform: (
           chunk: number,
           _: BufferEncoding,
@@ -70,7 +70,7 @@ describe('Given ParallelTransform with ratePerSecond', () => {
       collect(result),
     );
 
-    // ratePerSecond=2 limits to 2 per window despite maxConcurrency=3
+    // rateLimit.max=2 limits to 2 per window despite maxConcurrency=3
     await new Promise(r => process.nextTick(r));
     equal(callTimestamps.length, 2);
 

@@ -8,8 +8,8 @@ import { AsyncIdentity } from './utils/async-identity.js';
 import { eventsSimulation } from './utils/events-simulation.js';
 import { collect } from './utils/stream/collect.js';
 
-describe('Given OrderedParallelTransform with ratePerSecond', () => {
-  it('should limit transform calls per second and preserve input order', async context => {
+describe('Given OrderedParallelTransform with rateLimit', () => {
+  it('should limit transform calls per window and preserve input order', async context => {
     context.mock.timers.enable({ apis: ['setInterval'] });
     const callTimestamps: number[] = [];
     let currentTime = 0;
@@ -19,7 +19,7 @@ describe('Given OrderedParallelTransform with ratePerSecond', () => {
       Readable.from([1, 2, 3, 4]),
       new OrderedParallelTransform({
         objectMode: true,
-        ratePerSecond: 2,
+        rateLimit: { maxPerWindow: 2 },
         transform: (
           chunk: number,
           _: BufferEncoding,
@@ -159,7 +159,7 @@ describe('Given OrderedParallelTransform', () => {
             'When input is an empty array, it should return an empty array since the transform function is never called',
           input: [],
           transform: (
-            chunk: never,
+            chunk: number,
             _: BufferEncoding,
             done: TransformCallback,
           ) => {
@@ -528,7 +528,7 @@ describe('Given OrderedParallelTransform', () => {
             objectMode: true,
             maxConcurrency,
             transform: (
-              chunk: never,
+              chunk: number,
               bufferEncoding: BufferEncoding,
               done: TransformCallback,
             ) => {

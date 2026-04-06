@@ -1,11 +1,14 @@
 import { Transform } from 'node:stream';
 import type { TransformCallback, TransformOptions } from 'node:stream';
 
-import { FixedWindowRateLimiter } from './rate-limiter.js';
+import {
+  FixedWindowRateLimiter,
+  type RateLimitOptions,
+} from './rate-limiter.js';
 
 export type ParallelTransformOptions = TransformOptions & {
   maxConcurrency?: number;
-  ratePerSecond?: number;
+  rateLimit?: RateLimitOptions;
 };
 
 /**
@@ -39,15 +42,15 @@ export class ParallelTransform extends Transform {
       flush = (done: TransformCallback): void => done(null),
       ...rest
     } = options;
-    const { ratePerSecond, maxConcurrency = 16, ...streamOptions } = rest;
+    const { rateLimit, maxConcurrency = 16, ...streamOptions } = rest;
     super(streamOptions);
     this.user = {
       transform,
       flush,
     };
     this._maxConcurrency = maxConcurrency;
-    this._rateLimiter = ratePerSecond
-      ? new FixedWindowRateLimiter(ratePerSecond)
+    this._rateLimiter = rateLimit
+      ? new FixedWindowRateLimiter(rateLimit)
       : undefined;
   }
 
@@ -55,8 +58,12 @@ export class ParallelTransform extends Transform {
     return this._maxConcurrency;
   }
 
-  get ratePerSecond(): number | undefined {
-    return this._rateLimiter?.ratePerSecond;
+  get rateLimit(): RateLimitOptions | undefined {
+    if (!this._rateLimiter) return undefined;
+    return {
+      maxPerWindow: this._rateLimiter.maxPerWindow,
+      windowMs: this._rateLimiter.windowMs,
+    };
   }
 
   _transform(

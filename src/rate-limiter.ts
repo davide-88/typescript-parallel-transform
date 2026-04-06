@@ -1,14 +1,24 @@
 import { LinkedListQueue } from './queue/linked-list-queue.js';
 
+export type RateLimitOptions = {
+  maxPerWindow: number;
+  windowMs?: number;
+};
+
 export class FixedWindowRateLimiter {
   private startsInCurrentWindow: number = 0;
   private readonly pendingCallbacks = new LinkedListQueue<() => void>();
   private timer: ReturnType<typeof setInterval> | undefined = undefined;
+  readonly maxPerWindow: number;
+  readonly windowMs: number;
 
-  constructor(readonly ratePerSecond: number) {}
+  constructor({ maxPerWindow, windowMs = 1_000 }: RateLimitOptions) {
+    this.maxPerWindow = maxPerWindow;
+    this.windowMs = windowMs;
+  }
 
   acquire(onAllowed: () => void): void {
-    if (this.startsInCurrentWindow < this.ratePerSecond) {
+    if (this.startsInCurrentWindow < this.maxPerWindow) {
       this.startsInCurrentWindow++;
       this.ensureTimerRunning();
       onAllowed();
@@ -30,7 +40,7 @@ export class FixedWindowRateLimiter {
     if (this.timer !== undefined) return;
     this.timer = setInterval(() => {
       this.onWindowReset();
-    }, 1_000);
+    }, this.windowMs);
     this.timer.unref();
   }
 
@@ -38,7 +48,7 @@ export class FixedWindowRateLimiter {
     this.startsInCurrentWindow = 0;
     while (
       this.pendingCallbacks.size() > 0 &&
-      this.startsInCurrentWindow < this.ratePerSecond
+      this.startsInCurrentWindow < this.maxPerWindow
     ) {
       this.startsInCurrentWindow++;
       const cb = this.pendingCallbacks.dequeue()!;

@@ -5,9 +5,9 @@ import { FixedWindowRateLimiter } from './rate-limiter.js';
 
 describe('Given FixedWindowRateLimiter', () => {
   describe('When acquiring within the rate limit', () => {
-    it('should allow up to ratePerSecond calls immediately', context => {
+    it('should allow up to maxPerWindow calls immediately', context => {
       context.mock.timers.enable({ apis: ['setInterval'] });
-      const limiter = new FixedWindowRateLimiter(3);
+      const limiter = new FixedWindowRateLimiter({ maxPerWindow: 3 });
       const calls: number[] = [];
 
       limiter.acquire(() => calls.push(1));
@@ -22,7 +22,7 @@ describe('Given FixedWindowRateLimiter', () => {
   describe('When acquiring beyond the rate limit', () => {
     it('should queue the callback exceeding the rate', context => {
       context.mock.timers.enable({ apis: ['setInterval'] });
-      const limiter = new FixedWindowRateLimiter(2);
+      const limiter = new FixedWindowRateLimiter({ maxPerWindow: 2 });
       const calls: number[] = [];
 
       limiter.acquire(() => calls.push(1));
@@ -36,7 +36,7 @@ describe('Given FixedWindowRateLimiter', () => {
 
     it('should release queued callbacks on window reset', context => {
       context.mock.timers.enable({ apis: ['setInterval'] });
-      const limiter = new FixedWindowRateLimiter(2);
+      const limiter = new FixedWindowRateLimiter({ maxPerWindow: 2 });
       const calls: number[] = [];
 
       limiter.acquire(() => calls.push(1));
@@ -51,9 +51,9 @@ describe('Given FixedWindowRateLimiter', () => {
       limiter.destroy();
     });
 
-    it('should release at most ratePerSecond callbacks per window', context => {
+    it('should release at most maxPerWindow callbacks per window', context => {
       context.mock.timers.enable({ apis: ['setInterval'] });
-      const limiter = new FixedWindowRateLimiter(2);
+      const limiter = new FixedWindowRateLimiter({ maxPerWindow: 2 });
       const calls: number[] = [];
 
       for (let i = 1; i <= 6; i++) {
@@ -74,7 +74,7 @@ describe('Given FixedWindowRateLimiter', () => {
   describe('When destroying the rate limiter', () => {
     it('should clear pending callbacks and stop the timer', context => {
       context.mock.timers.enable({ apis: ['setInterval'] });
-      const limiter = new FixedWindowRateLimiter(1);
+      const limiter = new FixedWindowRateLimiter({ maxPerWindow: 1 });
       const calls: number[] = [];
 
       limiter.acquire(() => calls.push(1));
@@ -92,7 +92,7 @@ describe('Given FixedWindowRateLimiter', () => {
   describe('When all pending callbacks are released', () => {
     it('should stop the timer automatically', context => {
       context.mock.timers.enable({ apis: ['setInterval'] });
-      const limiter = new FixedWindowRateLimiter(2);
+      const limiter = new FixedWindowRateLimiter({ maxPerWindow: 2 });
       const calls: number[] = [];
 
       limiter.acquire(() => calls.push(1));
@@ -116,10 +116,36 @@ describe('Given FixedWindowRateLimiter', () => {
     });
   });
 
+  describe('When using a custom window duration', () => {
+    it('should use the specified windowMs for the interval', context => {
+      context.mock.timers.enable({ apis: ['setInterval'] });
+      const limiter = new FixedWindowRateLimiter({
+        maxPerWindow: 2,
+        windowMs: 5_000,
+      });
+      const calls: number[] = [];
+
+      limiter.acquire(() => calls.push(1));
+      limiter.acquire(() => calls.push(2));
+      limiter.acquire(() => calls.push(3));
+
+      deepEqual(calls, [1, 2]);
+
+      // Ticking 1000ms should NOT release (window is 5000ms)
+      context.mock.timers.tick(1000);
+      deepEqual(calls, [1, 2]);
+
+      // Ticking to 5000ms total should release
+      context.mock.timers.tick(4000);
+      deepEqual(calls, [1, 2, 3]);
+      limiter.destroy();
+    });
+  });
+
   describe('When acquiring after a window reset with no pending callbacks', () => {
     it('should allow a full burst in the new window', context => {
       context.mock.timers.enable({ apis: ['setInterval'] });
-      const limiter = new FixedWindowRateLimiter(2);
+      const limiter = new FixedWindowRateLimiter({ maxPerWindow: 2 });
       const calls: number[] = [];
 
       limiter.acquire(() => calls.push(1));
