@@ -49,4 +49,19 @@ describe('Given LinkedListQueue', () => {
     equal(queue.dequeue(), 3);
     equal(queue.dequeue(), undefined);
   });
+
+  it('When clearing a non-empty queue, it should reset to empty and remain usable', () => {
+    const queue = new LinkedListQueue([1, 2, 3]);
+    equal(queue.size(), 3);
+
+    queue.clear();
+
+    equal(queue.size(), 0);
+    equal(queue.dequeue(), undefined);
+    equal(queue.peek(), undefined);
+
+    queue.enqueue(4);
+    equal(queue.size(), 1);
+    equal(queue.dequeue(), 4);
+  });
 });

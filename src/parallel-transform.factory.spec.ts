@@ -1,4 +1,4 @@
-import { deepEqual, ok } from 'node:assert/strict';
+import { deepEqual, equal, ok } from 'node:assert/strict';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { describe, it } from 'node:test';
@@ -21,6 +21,8 @@ describe('Given parallelTransform factory', () => {
         transform: (chunk: number, _, callback) => callback(null, chunk * 2),
       });
       ok(transform instanceof ParallelTransform);
+      equal(transform.maxConcurrency, 16);
+      equal(transform.rateLimit, undefined);
       await pipeline(Readable.from([1, 2, 3]), transform, collect(result));
       deepEqual(result, [2, 4, 6]);
     });
@@ -35,9 +37,63 @@ describe('Given parallelTransform factory', () => {
         transform: (chunk: number, _, callback) => callback(null, chunk * 2),
       });
       ok(transform instanceof OrderedParallelTransform);
+      equal(transform.maxConcurrency, 16);
+      equal(transform.rateLimit, undefined);
       await pipeline(Readable.from([1, 2, 3]), transform, collect(result));
       deepEqual(result, [2, 4, 6]);
     });
+  });
+});
+
+describe('Given parallelTransform factory with rateLimit', () => {
+  describe('When ordered is false', () => {
+    it('should create a ParallelTransform with rate limiting', async () => {
+      const result: number[] = [];
+      const transform = parallelTransform({
+        objectMode: true,
+        ordered: false,
+        rateLimit: { maxPerWindow: 10 },
+        transform: (chunk: number, _, callback) => callback(null, chunk * 2),
+      });
+      ok(transform instanceof ParallelTransform);
+      equal(transform.maxConcurrency, 16);
+      deepEqual(transform.rateLimit, { maxPerWindow: 10, windowMs: 1_000 });
+      await pipeline(Readable.from([1, 2, 3]), transform, collect(result));
+      deepEqual(result, [2, 4, 6]);
+    });
+  });
+
+  describe('When ordered is true', () => {
+    it('should create an OrderedParallelTransform with rate limiting', async () => {
+      const result: number[] = [];
+      const transform = parallelTransform({
+        objectMode: true,
+        ordered: true,
+        rateLimit: { maxPerWindow: 10 },
+        transform: (chunk: number, _, callback) => callback(null, chunk * 2),
+      });
+      ok(transform instanceof OrderedParallelTransform);
+      equal(transform.maxConcurrency, 16);
+      deepEqual(transform.rateLimit, { maxPerWindow: 10, windowMs: 1_000 });
+      await pipeline(Readable.from([1, 2, 3]), transform, collect(result));
+      deepEqual(result, [2, 4, 6]);
+    });
+  });
+});
+
+describe('Given promisifiedParallelTransform factory with rateLimit', () => {
+  it('should pass rateLimit through to the transform', async () => {
+    const result: number[] = [];
+    const transform = promisifiedParallelTransform<number, number>({
+      objectMode: true,
+      ordered: false,
+      rateLimit: { maxPerWindow: 10 },
+      transform: (chunk: number) => chunk * 2,
+    });
+    equal(transform.maxConcurrency, 16);
+    deepEqual(transform.rateLimit, { maxPerWindow: 10, windowMs: 1_000 });
+    await pipeline(Readable.from([1, 2, 3]), transform, collect(result));
+    deepEqual(result, [2, 4, 6]);
   });
 });
 

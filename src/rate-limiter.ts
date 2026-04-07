@@ -1,0 +1,88 @@
+import { LinkedListQueue } from './queue/linked-list-queue.js';
+
+export type RateLimitOptions = {
+  maxPerWindow: number;
+  windowMs?: number;
+};
+
+export class FixedWindowRateLimiter {
+  private startsInCurrentWindow: number = 0;
+  private readonly pendingCallbacks = new LinkedListQueue<() => void>();
+  private timer: ReturnType<typeof setInterval> | undefined = undefined;
+  readonly maxPerWindow: number;
+  readonly windowMs: number;
+
+  constructor({ maxPerWindow, windowMs = 1_000 }: RateLimitOptions) {
+    this.maxPerWindow = maxPerWindow;
+    this.windowMs = windowMs;
+  }
+
+  acquire(onAllowed: () => void): void {
+    if (this.startsInCurrentWindow < this.maxPerWindow) {
+      this.startsInCurrentWindow++;
+      this.ensureTimerRunning();
+      onAllowed();
+    } else {
+      this.pendingCallbacks.enqueue(onAllowed);
+      this.ensureTimerRunning();
+    }
+  }
+
+  destroy(): number {
+    if (this.timer !== undefined) {
+      clearInterval(this.timer);
+      this.timer = undefined;
+    }
+    const dropped = this.pendingCallbacks.size();
+    this.pendingCallbacks.clear();
+    return dropped;
+  }
+
+  private ensureTimerRunning(): void {
+    if (
+      this.timer !== undefined &&
+      !this.timer.hasRef() &&
+      this.pendingCallbacks.size() !== 0
+    ) {
+      this.timer.ref();
+    }
+    if (this.timer !== undefined) return;
+    this.timer = setInterval(() => {
+      this.onWindowReset();
+    }, this.windowMs);
+    if (this.pendingCallbacks.size() === 0) {
+      this.timer.unref();
+    }
+  }
+
+  private onWindowReset(): void {
+    // Clear the timer BEFORE resetting the counter. If we cleared after
+    // the reset, a new acquire arriving between the reset and the next
+    // interval would start a fresh timer — shifting the window boundary.
+    // By clearing first (while startsInCurrentWindow still reflects the
+    // previous window's usage), then resetting, any acquire that arrives
+    // before a new interval starts will count against the freshly-reset
+    // window. The timer naturally clears itself one tick after the last
+    // pending callback is drained, preserving consistent window boundaries.
+    if (this.pendingCallbacks.size() === 0) {
+      clearInterval(this.timer);
+      this.timer = undefined;
+    }
+    this.startsInCurrentWindow = 0;
+    while (
+      this.pendingCallbacks.size() > 0 &&
+      this.startsInCurrentWindow < this.maxPerWindow
+    ) {
+      this.startsInCurrentWindow++;
+      const cb = this.pendingCallbacks.dequeue()!;
+      cb();
+    }
+    // Unref AFTER draining: if all pending callbacks were released in the
+    // loop above, the timer is no longer needed to keep the process alive
+    // but must stay running to fire one more tick for a clean shutdown
+    // (the clear check at the top of the next invocation).
+    if (this.timer !== undefined && this.pendingCallbacks.size() === 0) {
+      this.timer.unref();
+    }
+  }
+}

@@ -49,7 +49,8 @@
     "prepare": "husky",
     "test": "node --import tsx --test-reporter=spec --test './src/**/*.spec.ts' './src/*.spec.ts'",
     "test:coverage": "c8 node --import tsx --test-reporter=spec --test './src/**/*.spec.ts' './src/*.spec.ts'",
-    "test:debug": "node --inspect-wait --import tsx --test './src/**/*.spec.ts' './src/*.spec.ts'"
+    "test:debug": "node --inspect-wait --import tsx --test './src/**/*.spec.ts' './src/*.spec.ts'",
+    "test:watch": "node --import tsx --test-reporter=spec --watch --test './src/**/*.spec.ts' './src/*.spec.ts'"
   },
   "devDependencies": {
     "@commitlint/cli": "20.5.0",

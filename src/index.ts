@@ -3,6 +3,7 @@ export {
   ParallelTransform,
   type ParallelTransformOptions,
 } from './parallel-transform.js';
+export { type RateLimitOptions } from './rate-limiter.js';
 export {
   parallelTransform,
   promisifiedParallelTransform,

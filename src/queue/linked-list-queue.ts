@@ -46,6 +46,12 @@ export class LinkedListQueue<T> extends Queue<T> {
     return this.numberOfNodes;
   }
 
+  clear(): void {
+    this.head = undefined;
+    this.tail = undefined;
+    this.numberOfNodes = 0;
+  }
+
   [Symbol.iterator](): Iterator<T> {
     let current = this.head;
     return {
