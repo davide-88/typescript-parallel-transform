@@ -37,11 +37,20 @@ export class FixedWindowRateLimiter {
   }
 
   private ensureTimerRunning(): void {
+    if (
+      this.timer !== undefined &&
+      !this.timer.hasRef() &&
+      this.pendingCallbacks.size() !== 0
+    ) {
+      this.timer.ref();
+    }
     if (this.timer !== undefined) return;
     this.timer = setInterval(() => {
       this.onWindowReset();
     }, this.windowMs);
-    this.timer.unref();
+    if (this.pendingCallbacks.size() === 0) {
+      this.timer.unref();
+    }
   }
 
   private onWindowReset(): void {

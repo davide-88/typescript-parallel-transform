@@ -72,6 +72,50 @@ The elapsed time is around 1 second because it processed 10 items concurrently
 and the slowest took 1 second to be processed. Moreover the order of the items
 in the result array is equal to the input one.
 
+### Rate-limited ParallelTransform
+
+Usage example:
+[Rate-limited Parallel Transform](src/examples/rate-limited-parallel-transform.ts)
+
+```bash
+npx tsx src/examples/rate-limited-parallel-transform.ts
+```
+
+Running this example will output something similar to this:
+
+```
+Elapsed time: 3119.824332ms
+Result: [
+  1, 2, 3, 4,  5,
+  6, 7, 8, 9, 10
+]
+```
+
+The elapsed time is around 3 seconds because the rate limiter allows only 3
+items per 1-second window. With 10 items and each taking 100ms to process, the
+throughput is gate-kept by the rate limit rather than the concurrency limit.
+
+### Rate-limited OrderedParallelTransform
+
+Usage example:
+[Rate-limited Ordered Parallel Transform](src/examples/rate-limited-ordered-parallel-transform.ts)
+
+```bash
+npx tsx src/examples/rate-limited-ordered-parallel-transform.ts
+```
+
+Running this example will output something similar to this:
+
+```
+Elapsed time: 3118.652241ms
+Result: [
+  1, 2, 3, 4,  5,
+  6, 7, 8, 9, 10
+]
+```
+
+Same as above but the output order matches the input order.
+
 ### ParallelTransformFactory
 
 Usage example:
