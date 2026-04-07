@@ -305,6 +305,161 @@ describe('Given FixedWindowRateLimiter', () => {
     });
   });
 
+  describe('When window boundaries are preserved after pending drain', () => {
+    let tick: () => void;
+    let isRefed: () => boolean;
+    let timerCleared: boolean;
+    const originalSetInterval = globalThis.setInterval;
+    const originalClearInterval = globalThis.clearInterval;
+
+    beforeEach(() => {
+      let callback: () => void;
+      let refed = false;
+      timerCleared = false;
+      globalThis.setInterval = ((cb: () => void) => {
+        callback = cb;
+        refed = true;
+        timerCleared = false;
+        return {
+          ref() {
+            refed = true;
+          },
+          unref() {
+            refed = false;
+          },
+          hasRef() {
+            return refed;
+          },
+          [Symbol.dispose]() {},
+        } as unknown as ReturnType<typeof setInterval>;
+      }) as typeof setInterval;
+      globalThis.clearInterval = (() => {
+        refed = false;
+        timerCleared = true;
+      }) as typeof clearInterval;
+
+      tick = () => callback();
+      isRefed = () => refed;
+    });
+
+    afterEach(() => {
+      globalThis.setInterval = originalSetInterval;
+      globalThis.clearInterval = originalClearInterval;
+    });
+
+    it('should keep the timer alive (unrefed) after draining pending callbacks', () => {
+      const limiter = new FixedWindowRateLimiter({ maxPerWindow: 2 });
+
+      limiter.acquire(() => {});
+      limiter.acquire(() => {});
+      limiter.acquire(() => {});
+
+      deepEqual(isRefed(), true, 'Timer should be refed with pending');
+
+      // Window reset drains the single pending callback
+      tick();
+
+      deepEqual(
+        timerCleared,
+        false,
+        'Timer should NOT be cleared after draining — it stays alive for one more tick',
+      );
+      deepEqual(
+        isRefed(),
+        false,
+        'Timer should be unrefed after draining so it does not block process exit',
+      );
+
+      limiter.destroy();
+    });
+
+    it('should clear the timer on the tick AFTER all pending are drained', () => {
+      const limiter = new FixedWindowRateLimiter({ maxPerWindow: 2 });
+
+      limiter.acquire(() => {});
+      limiter.acquire(() => {});
+      limiter.acquire(() => {});
+
+      // First tick: drains pending, timer stays alive (unrefed)
+      tick();
+      deepEqual(timerCleared, false);
+
+      // Second tick: no pending → timer cleared
+      tick();
+      deepEqual(
+        timerCleared,
+        true,
+        'Timer should be cleared on the next tick when no pending callbacks remain',
+      );
+
+      limiter.destroy();
+    });
+
+    it('should count new acquires against the current window after drain', () => {
+      const limiter = new FixedWindowRateLimiter({ maxPerWindow: 3 });
+      const calls: number[] = [];
+
+      // Fill window: 3 immediate, 1 pending
+      limiter.acquire(() => calls.push(1));
+      limiter.acquire(() => calls.push(2));
+      limiter.acquire(() => calls.push(3));
+      limiter.acquire(() => calls.push(4));
+
+      deepEqual(calls, [1, 2, 3]);
+
+      // Window reset: drains callback 4 (startsInCurrentWindow=1).
+      // Timer stays alive (unrefed).
+      tick();
+      deepEqual(calls, [1, 2, 3, 4]);
+
+      // Acquire 2 more in the SAME window (slots left: 3-1=2).
+      // Because the timer was NOT cleared, these count against the
+      // current window rather than starting a new one.
+      limiter.acquire(() => calls.push(5));
+      limiter.acquire(() => calls.push(6));
+      deepEqual(calls, [1, 2, 3, 4, 5, 6]);
+
+      // Window is now full (startsInCurrentWindow=3), next acquire is queued
+      limiter.acquire(() => calls.push(7));
+      deepEqual(
+        calls,
+        [1, 2, 3, 4, 5, 6],
+        'Callback 7 should be queued — window budget exhausted',
+      );
+
+      // Next tick releases it
+      tick();
+      deepEqual(calls, [1, 2, 3, 4, 5, 6, 7]);
+
+      limiter.destroy();
+    });
+
+    it('should re-ref the timer when new pending callbacks arrive after drain', () => {
+      const limiter = new FixedWindowRateLimiter({ maxPerWindow: 1 });
+
+      limiter.acquire(() => {});
+      limiter.acquire(() => {});
+
+      deepEqual(isRefed(), true);
+
+      // Drain: timer stays alive, unrefed
+      tick();
+      deepEqual(isRefed(), false);
+      deepEqual(timerCleared, false);
+
+      // New acquire fills the window (startsInCurrentWindow=1 after
+      // reset), then another queues → timer re-refed
+      limiter.acquire(() => {});
+      deepEqual(
+        isRefed(),
+        true,
+        'Timer should be re-refed when new pending callbacks arrive',
+      );
+
+      limiter.destroy();
+    });
+  });
+
   describe('When acquiring after a window reset with no pending callbacks', () => {
     it('should allow a full burst in the new window', context => {
       context.mock.timers.enable({ apis: ['setInterval'] });

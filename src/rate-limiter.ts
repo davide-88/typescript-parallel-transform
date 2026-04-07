@@ -56,6 +56,18 @@ export class FixedWindowRateLimiter {
   }
 
   private onWindowReset(): void {
+    // Clear the timer BEFORE resetting the counter. If we cleared after
+    // the reset, a new acquire arriving between the reset and the next
+    // interval would start a fresh timer — shifting the window boundary.
+    // By clearing first (while startsInCurrentWindow still reflects the
+    // previous window's usage), then resetting, any acquire that arrives
+    // before a new interval starts will count against the freshly-reset
+    // window. The timer naturally clears itself one tick after the last
+    // pending callback is drained, preserving consistent window boundaries.
+    if (this.pendingCallbacks.size() === 0) {
+      clearInterval(this.timer);
+      this.timer = undefined;
+    }
     this.startsInCurrentWindow = 0;
     while (
       this.pendingCallbacks.size() > 0 &&
@@ -65,9 +77,12 @@ export class FixedWindowRateLimiter {
       const cb = this.pendingCallbacks.dequeue()!;
       cb();
     }
-    if (this.pendingCallbacks.size() === 0) {
-      clearInterval(this.timer);
-      this.timer = undefined;
+    // Unref AFTER draining: if all pending callbacks were released in the
+    // loop above, the timer is no longer needed to keep the process alive
+    // but must stay running to fire one more tick for a clean shutdown
+    // (the clear check at the top of the next invocation).
+    if (this.timer !== undefined && this.pendingCallbacks.size() === 0) {
+      this.timer.unref();
     }
   }
 }
