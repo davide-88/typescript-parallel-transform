@@ -28,12 +28,14 @@ export class FixedWindowRateLimiter {
     }
   }
 
-  destroy(): void {
+  destroy(): number {
     if (this.timer !== undefined) {
       clearInterval(this.timer);
       this.timer = undefined;
     }
+    const dropped = this.pendingCallbacks.size();
     this.pendingCallbacks.clear();
+    return dropped;
   }
 
   private ensureTimerRunning(): void {

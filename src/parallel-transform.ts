@@ -99,10 +99,11 @@ export class ParallelTransform extends Transform {
     error: Error | null,
     callback: (error?: Error | null) => void,
   ): void {
-    // Pending callbacks are rate-limited user transforms that haven't
-    // started yet. Dropping them is safe: _destroy runs on error/abort
-    // paths where _flush (which waits on inflight === 0) will never run.
-    this._rateLimiter?.destroy();
+    if (this._rateLimiter) {
+      // Decrement inflight for each pending callback that will never run,
+      // keeping the counter consistent even after destroy.
+      this.inflight = Math.max(0, this.inflight - this._rateLimiter.destroy());
+    }
     super._destroy(error, callback);
   }
 
