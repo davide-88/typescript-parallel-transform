@@ -53,8 +53,8 @@
     "test:watch": "node --import tsx --test-reporter=spec --watch --test './src/**/*.spec.ts' './src/*.spec.ts'"
   },
   "devDependencies": {
-    "@commitlint/cli": "20.5.2",
-    "@commitlint/config-conventional": "20.5.0",
+    "@commitlint/cli": "20.5.3",
+    "@commitlint/config-conventional": "20.5.3",
     "@eslint/js": "9.39.4",
     "@ianvs/prettier-plugin-sort-imports": "4.7.1",
     "@tsconfig/node-lts": "24.0.0",
