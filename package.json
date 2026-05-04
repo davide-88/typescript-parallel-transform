@@ -71,7 +71,7 @@
     "tsdown": "0.21.7",
     "tsx": "4.21.0",
     "typescript": "6.0.2",
-    "typescript-eslint": "8.59.1"
+    "typescript-eslint": "8.59.2"
   },
   "publishConfig": {
     "provenance": true
