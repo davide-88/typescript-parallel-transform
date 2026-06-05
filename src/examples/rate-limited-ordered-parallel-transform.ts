@@ -3,9 +3,9 @@ import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { inspect } from 'node:util';
 
-import { OrderedParallelTransform } from '../ordered-parallel-transform.js';
+import { OrderedParallelTransform } from '../ordered-parallel-transform.ts';
 
-import { collect } from './../utils/stream/collect.js';
+import { collect } from './../utils/stream/collect.ts';
 
 const result: never[] = [];
 const start = hrtime.bigint();

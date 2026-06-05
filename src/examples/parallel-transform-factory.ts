@@ -3,8 +3,8 @@ import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { inspect, parseArgs } from 'node:util';
 
-import { parallelTransform } from '../parallel-transform.factory.js';
-import { collect } from '../utils/stream/collect.js';
+import { parallelTransform } from '../parallel-transform.factory.ts';
+import { collect } from '../utils/stream/collect.ts';
 
 const args = process.argv.slice(2, process.argv.length);
 const {

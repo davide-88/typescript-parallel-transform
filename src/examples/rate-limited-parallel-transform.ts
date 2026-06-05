@@ -3,8 +3,8 @@ import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { inspect } from 'node:util';
 
-import { ParallelTransform } from './../parallel-transform.js';
-import { collect } from './../utils/stream/collect.js';
+import { ParallelTransform } from './../parallel-transform.ts';
+import { collect } from './../utils/stream/collect.ts';
 
 const result: never[] = [];
 const start = hrtime.bigint();

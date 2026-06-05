@@ -2,9 +2,9 @@ import type { TransformCallback } from 'node:stream';
 
 import {
   ParallelTransform,
-  ParallelTransformOptions,
-} from './parallel-transform.js';
-import { LinkedListQueue } from './queue/linked-list-queue.js';
+  type ParallelTransformOptions,
+} from './parallel-transform.ts';
+import { LinkedListQueue } from './queue/linked-list-queue.ts';
 
 type ResultContainer = {
   data?: never;
@@ -24,14 +24,14 @@ export const resultContainerFactory = {
  * from were received.
  */
 export class OrderedParallelTransform extends ParallelTransform {
-  private resultsQueue = new LinkedListQueue<ResultContainer>();
+  #resultsQueue = new LinkedListQueue<ResultContainer>();
   constructor(options: ParallelTransformOptions) {
     super(options);
   }
 
   protected onUserTransformComplete(): TransformCallback {
     const resultContainer = resultContainerFactory.create();
-    this.resultsQueue.enqueue(resultContainer);
+    this.#resultsQueue.enqueue(resultContainer);
     return (error?: Error | null, data?: never): void => {
       this.inflight--;
       if (error) {
@@ -40,7 +40,7 @@ export class OrderedParallelTransform extends ParallelTransform {
       }
       resultContainer.data = data;
       resultContainer.resolved = true;
-      const pushedDataCount = this.pushResolvedDataOrdered();
+      const pushedDataCount = this.#pushResolvedDataOrdered();
       // The delayed transform callback has to be called only if the data was pushed.
       // Otherwise the transform concurrency would be capped to the max concurrency
       // but the size of the queue would exceed the max concurrency.
@@ -61,17 +61,16 @@ export class OrderedParallelTransform extends ParallelTransform {
 
   /**
    * It pushes only resolved data in the order the corresponding chunks they originate from were received.
-   * @private
    * @returns The number of pushed data.
    */
-  private pushResolvedDataOrdered(): number {
+  #pushResolvedDataOrdered(): number {
     let pushedDataCount = 0;
-    let current = this.resultsQueue.peek();
+    let current = this.#resultsQueue.peek();
     while (current?.resolved === true) {
-      this.resultsQueue.dequeue();
+      this.#resultsQueue.dequeue();
       this.push(current.data);
       pushedDataCount++;
-      current = this.resultsQueue.peek();
+      current = this.#resultsQueue.peek();
     }
     return pushedDataCount;
   }

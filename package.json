@@ -13,7 +13,7 @@
   },
   "author": "davide-88",
   "license": "MIT",
-  "packageManager": "pnpm@10.32.1",
+  "packageManager": "pnpm@10.33.0",
   "engines": {
     "node": ">=22.0.0"
   },
@@ -47,31 +47,30 @@
     "lint:eslint": "eslint --cache --color ./src/**/*",
     "lint:prettier": "prettier --cache --cache-location=.prettiercache --list-different \"./**/*.{html,css,js,cjs,jsx,ts,cts,tsx,md,json}\"",
     "prepare": "husky",
-    "test": "node --import tsx --test-reporter=spec --test './src/**/*.spec.ts' './src/*.spec.ts'",
-    "test:coverage": "c8 node --import tsx --test-reporter=spec --test './src/**/*.spec.ts' './src/*.spec.ts'",
-    "test:debug": "node --inspect-wait --import tsx --test './src/**/*.spec.ts' './src/*.spec.ts'",
-    "test:watch": "node --import tsx --test-reporter=spec --watch --test './src/**/*.spec.ts' './src/*.spec.ts'"
+    "test": "node --test-reporter=spec --test './src/**/*.spec.ts' './src/*.spec.ts'",
+    "test:coverage": "c8 node --test-reporter=spec --test './src/**/*.spec.ts' './src/*.spec.ts'",
+    "test:debug": "node --inspect-wait --test './src/**/*.spec.ts' './src/*.spec.ts'",
+    "test:watch": "node --test-reporter=spec --watch --test './src/**/*.spec.ts' './src/*.spec.ts'"
   },
   "devDependencies": {
-    "@commitlint/cli": "20.5.0",
-    "@commitlint/config-conventional": "20.5.0",
+    "@commitlint/cli": "20.5.3",
+    "@commitlint/config-conventional": "20.5.3",
     "@eslint/js": "9.39.4",
     "@ianvs/prettier-plugin-sort-imports": "4.7.1",
     "@tsconfig/node-lts": "24.0.0",
-    "@types/node": "24.12.2",
+    "@types/node": "24.13.0",
     "c8": "^11.0.0",
     "eslint": "9.39.4",
     "fast-glob": "3.3.3",
     "globals": "17.4.0",
     "husky": "9.1.7",
     "lint-staged": "16.4.0",
-    "prettier": "3.8.1",
+    "prettier": "3.8.3",
     "prettier-plugin-pkg": "0.22.1",
     "semantic-release": "25.0.3",
-    "tsdown": "0.21.4",
-    "tsx": "4.21.0",
+    "tsdown": "0.21.7",
     "typescript": "6.0.2",
-    "typescript-eslint": "8.58.0"
+    "typescript-eslint": "8.60.1"
   },
   "publishConfig": {
     "provenance": true
