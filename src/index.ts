@@ -1,10 +1,10 @@
-export { OrderedParallelTransform } from './ordered-parallel-transform.js';
+export { OrderedParallelTransform } from './ordered-parallel-transform.ts';
 export {
   ParallelTransform,
   type ParallelTransformOptions,
-} from './parallel-transform.js';
-export { type RateLimitOptions } from './rate-limiter.js';
+} from './parallel-transform.ts';
+export { type RateLimitOptions } from './rate-limiter.ts';
 export {
   parallelTransform,
   promisifiedParallelTransform,
-} from './parallel-transform.factory.js';
+} from './parallel-transform.factory.ts';

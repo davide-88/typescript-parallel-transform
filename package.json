@@ -47,10 +47,10 @@
     "lint:eslint": "eslint --cache --color ./src/**/*",
     "lint:prettier": "prettier --cache --cache-location=.prettiercache --list-different \"./**/*.{html,css,js,cjs,jsx,ts,cts,tsx,md,json}\"",
     "prepare": "husky",
-    "test": "node --import tsx --test-reporter=spec --test './src/**/*.spec.ts' './src/*.spec.ts'",
-    "test:coverage": "c8 node --import tsx --test-reporter=spec --test './src/**/*.spec.ts' './src/*.spec.ts'",
-    "test:debug": "node --inspect-wait --import tsx --test './src/**/*.spec.ts' './src/*.spec.ts'",
-    "test:watch": "node --import tsx --test-reporter=spec --watch --test './src/**/*.spec.ts' './src/*.spec.ts'"
+    "test": "node --test-reporter=spec --test './src/**/*.spec.ts' './src/*.spec.ts'",
+    "test:coverage": "c8 node --test-reporter=spec --test './src/**/*.spec.ts' './src/*.spec.ts'",
+    "test:debug": "node --inspect-wait --test './src/**/*.spec.ts' './src/*.spec.ts'",
+    "test:watch": "node --test-reporter=spec --watch --test './src/**/*.spec.ts' './src/*.spec.ts'"
   },
   "devDependencies": {
     "@commitlint/cli": "20.5.3",
@@ -69,7 +69,6 @@
     "prettier-plugin-pkg": "0.22.1",
     "semantic-release": "25.0.3",
     "tsdown": "0.21.7",
-    "tsx": "4.21.0",
     "typescript": "6.0.2",
     "typescript-eslint": "8.60.1"
   },

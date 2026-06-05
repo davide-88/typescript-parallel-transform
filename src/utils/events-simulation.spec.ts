@@ -1,7 +1,7 @@
 import { deepEqual } from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { eventsSimulation, TimedEventNode } from './events-simulation.js';
+import { eventsSimulation, type TimedEventNode } from './events-simulation.ts';
 
 describe('Given eventsSimulation', () => {
   describe('When computing ticks and timeouts', () => {

@@ -3,10 +3,10 @@ import { Readable, type TransformCallback } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { describe, it } from 'node:test';
 
-import { OrderedParallelTransform } from './ordered-parallel-transform.js';
-import { AsyncIdentity } from './utils/async-identity.js';
-import { eventsSimulation } from './utils/events-simulation.js';
-import { collect } from './utils/stream/collect.js';
+import { OrderedParallelTransform } from './ordered-parallel-transform.ts';
+import { AsyncIdentity } from './utils/async-identity.ts';
+import { eventsSimulation } from './utils/events-simulation.ts';
+import { collect } from './utils/stream/collect.ts';
 
 describe('Given OrderedParallelTransform with rateLimit', () => {
   it('should limit transform calls per window and preserve input order', async context => {

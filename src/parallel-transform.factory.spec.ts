@@ -8,8 +8,8 @@ import {
   ParallelTransform,
   parallelTransform,
   promisifiedParallelTransform,
-} from './index.js';
-import { collect } from './utils/stream/collect.js';
+} from './index.ts';
+import { collect } from './utils/stream/collect.ts';
 
 describe('Given parallelTransform factory', () => {
   describe('When ordered is false', () => {

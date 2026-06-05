@@ -1,10 +1,10 @@
 import type { TransformCallback } from 'node:stream';
 
-import { OrderedParallelTransform } from './ordered-parallel-transform.js';
+import { OrderedParallelTransform } from './ordered-parallel-transform.ts';
 import {
   ParallelTransform,
   type ParallelTransformOptions,
-} from './parallel-transform.js';
+} from './parallel-transform.ts';
 
 export type CreateParallelTransformOptions = ParallelTransformOptions & {
   ordered: boolean;

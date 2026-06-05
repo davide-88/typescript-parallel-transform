@@ -4,7 +4,7 @@ import type { TransformCallback, TransformOptions } from 'node:stream';
 import {
   FixedWindowRateLimiter,
   type RateLimitOptions,
-} from './rate-limiter.js';
+} from './rate-limiter.ts';
 
 export type ParallelTransformOptions = TransformOptions & {
   maxConcurrency?: number;

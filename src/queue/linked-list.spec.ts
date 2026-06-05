@@ -1,7 +1,7 @@
 import { equal } from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { LinkedListQueue } from './linked-list-queue.js';
+import { LinkedListQueue } from './linked-list-queue.ts';
 
 describe('Given LinkedListQueue', () => {
   const testCases = [
