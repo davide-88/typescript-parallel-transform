@@ -1,9 +1,9 @@
 import type { TestContext } from 'node:test';
 
-import { LinkedListQueue } from '../queue/linked-list-queue.js';
-import { Queue } from '../queue/queue.js';
+import { LinkedListQueue } from '../queue/linked-list-queue.ts';
+import { Queue } from '../queue/queue.ts';
 
-import { chunk } from './array/chunk.js';
+import { chunk } from './array/chunk.ts';
 
 export type TimedEventNode = { eventTimeout: number; ticksToNextEvent: number };
 

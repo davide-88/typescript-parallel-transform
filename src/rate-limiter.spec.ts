@@ -1,7 +1,7 @@
 import { deepEqual } from 'node:assert/strict';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 
-import { FixedWindowRateLimiter } from './rate-limiter.js';
+import { FixedWindowRateLimiter } from './rate-limiter.ts';
 
 describe('Given FixedWindowRateLimiter', () => {
   describe('When acquiring within the rate limit', () => {
