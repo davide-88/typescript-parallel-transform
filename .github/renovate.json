@@ -2,7 +2,6 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "baseBranches": ["development"],
   "labels": ["Renovate::Dependencies"],
-  "ignorePrAuthor": true,
   "extends": ["config:recommended"],
   "commitMessageAction": "⬆️ update",
   "commitMessageTopic": "{{depName}}",
