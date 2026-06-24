@@ -13,7 +13,7 @@
   },
   "author": "davide-88",
   "license": "MIT",
-  "packageManager": "pnpm@11.8.0",
+  "packageManager": "pnpm@11.9.0",
   "engines": {
     "node": ">=22.0.0"
   },
@@ -53,8 +53,8 @@
     "test:watch": "node --test-reporter=spec --watch --test './src/**/*.spec.ts' './src/*.spec.ts'"
   },
   "devDependencies": {
-    "@commitlint/cli": "21.0.2",
-    "@commitlint/config-conventional": "21.0.2",
+    "@commitlint/cli": "21.1.0",
+    "@commitlint/config-conventional": "21.1.0",
     "@eslint/js": "9.39.4",
     "@ianvs/prettier-plugin-sort-imports": "4.7.1",
     "@tsconfig/node-lts": "24.0.0",
@@ -70,7 +70,7 @@
     "semantic-release": "25.0.5",
     "tsdown": "0.21.7",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.61.1"
+    "typescript-eslint": "8.62.0"
   },
   "publishConfig": {
     "provenance": true
