@@ -12,5 +12,7 @@ export default defineConfig(options => {
     sourcemap: !options.watch,
     minify: !options.watch,
     clean: true,
+    publint: true,
+    attw: { profile: 'node16' },
   };
 });

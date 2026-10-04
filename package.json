@@ -18,12 +18,20 @@
     "node": ">=22.0.0"
   },
   "main": "./lib/index.cjs",
-  "module": "./lib/index.js",
+  "types": "./lib/index.d.cts",
+  "module": "./lib/index.mjs",
   "exports": {
     ".": {
-      "import": "./lib/index.js",
-      "require": "./lib/index.cjs"
-    }
+      "import": {
+        "types": "./lib/index.d.mts",
+        "default": "./lib/index.mjs"
+      },
+      "require": {
+        "types": "./lib/index.d.cts",
+        "default": "./lib/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "lib"
@@ -53,6 +61,7 @@
     "test:watch": "node --test-reporter=spec --watch --test './src/**/*.spec.ts' './src/*.spec.ts'"
   },
   "devDependencies": {
+    "@arethetypeswrong/core": "0.18.5",
     "@commitlint/cli": "21.2.3",
     "@commitlint/config-conventional": "21.2.3",
     "@eslint/js": "10.0.1",
@@ -67,6 +76,7 @@
     "lint-staged": "17.6.0",
     "prettier": "3.9.9",
     "prettier-plugin-pkg": "0.22.1",
+    "publint": "0.3.25",
     "semantic-release": "25.0.9",
     "tsdown": "0.23.0",
     "typescript": "6.0.3",
