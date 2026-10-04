@@ -2,7 +2,6 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "baseBranches": ["development"],
   "labels": ["Renovate::Dependencies"],
-  "ignorePrAuthor": true,
   "extends": ["config:recommended"],
   "commitMessageAction": "⬆️ update",
   "commitMessageTopic": "{{depName}}",
@@ -11,6 +10,7 @@
     "enabled": true,
     "labels": ["Security", "Type: Critical"]
   },
+  "minimumReleaseAge": "48 hours",
   "internalChecksFilter": "strict",
   "prConcurrentLimit": 12,
   "prHourlyLimit": 12,
