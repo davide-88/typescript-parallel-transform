@@ -1,0 +1,120 @@
+name: Benchmark
+
+on:
+  pull_request:
+    branches: ['development']
+  workflow_dispatch:
+    inputs:
+      base:
+        description: 'Ref to compare the selected branch against'
+        required: false
+        default: 'development'
+
+concurrency:
+  group: benchmark-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22.x, 24.x, 26.x]
+
+    steps:
+      - name: Checkout head
+        uses: actions/checkout@v7
+        with:
+          path: head
+
+      - name: Checkout base
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.base.sha || inputs.base }}
+          path: base
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6.1.0
+        with:
+          package_json_file: head/package.json
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v6.1.0
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      # Each side uses its own lockfile, so a dependency PR benchmarks the
+      # build output of the upgraded toolchain.
+      - name: Build base
+        working-directory: base
+        run: pnpm install --frozen-lockfile && pnpm build:bundle
+
+      - name: Build head
+        working-directory: head
+        run: pnpm install --frozen-lockfile && pnpm build:bundle
+
+      # The harness always comes from head, so base needs no bench/ directory.
+      - name: Compare base and head
+        run: >
+          node head/bench/compare.ts --base base/lib/index.mjs --head
+          head/lib/index.mjs --rounds 4 --out compare-${{ matrix.node-version
+          }}.json
+
+      - name: Upload results
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: bench-${{ matrix.node-version }}
+          path: compare-${{ matrix.node-version }}.json
+
+  report:
+    needs: bench
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Use Node.js 26.x
+        uses: actions/setup-node@v7
+        with:
+          node-version: 26.x
+
+      - name: Download results
+        uses: actions/download-artifact@v8.0.2
+        with:
+          pattern: bench-*
+          merge-multiple: true
+
+      - name: Build report
+        run: |
+          node bench/report.ts compare-*.json > report.md
+          cat report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment on the pull request
+        if:
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository
+        uses: marocchino/sticky-pull-request-comment@v3.0.5
+        with:
+          header: benchmark
+          path: report.md

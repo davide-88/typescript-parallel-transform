@@ -156,6 +156,24 @@ Result: [
 ]
 ```
 
+## Benchmarks
+
+The benchmarks run `parallelTransform` and `promisifiedParallelTransform`
+(ordered and unordered) against the built `lib/` with a synchronous transform, a
+microtask transform and a rate-limited transform.
+
+```bash
+pnpm bench                                      # build, then run on the current Node
+fnm exec --using=22 pnpm bench                  # compare Node versions locally (also 24, 26)
+pnpm build:bundle && node bench/compare.ts \
+  --base <path to another lib/index.mjs> --head ./lib/index.mjs --out compare.json
+```
+
+Pull requests to `development` run the same scenarios on Node 22, 24 and 26 for
+both the base branch and the PR in the same job. A comment on the PR shows ops/s
+for each side and flags scenarios that are more than 10% slower. It never fails
+the build, since shared CI runners are noisy.
+
 ## License
 
 Licensed under [MIT License](LICENSE.md).
