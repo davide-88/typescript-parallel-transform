@@ -13,7 +13,7 @@
   },
   "author": "davide-88",
   "license": "MIT",
-  "packageManager": "pnpm@12.15.0",
+  "packageManager": "pnpm@12.16.0",
   "engines": {
     "node": ">=22.0.0"
   },
