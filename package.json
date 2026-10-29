@@ -44,15 +44,17 @@
     "transform"
   ],
   "scripts": {
+    "bench": "pnpm build:bundle && node bench/run.ts --lib ./lib/index.mjs",
+    "bench:compare": "node bench/compare.ts",
     "build": "pnpm run \"/^build:.*/\"",
     "build:bundle": "tsdown",
     "build:type-check": "tsc --noEmit",
     "fix:lint:prettier": "prettier --cache --cache-location=.prettiercache --list-different \"./**/*.{html,css,js,cjs,jsx,ts,cts,tsx,md,json}\" --write",
     "format": "pnpm run \"/^format:.*/\"",
-    "format:eslint": "eslint --cache --color ./src/**/* --fix",
+    "format:eslint": "eslint --cache --color ./src/**/* ./bench/**/* --fix",
     "format:prettier": "prettier --write --cache --cache-location=.prettiercache --list-different \"./**/*.{html,css,js,cjs,jsx,ts,cts,tsx,md,json}\"",
     "lint": "pnpm run \"/^lint:.*/\"",
-    "lint:eslint": "eslint --cache --color ./src/**/*",
+    "lint:eslint": "eslint --cache --color ./src/**/* ./bench/**/*",
     "lint:prettier": "prettier --cache --cache-location=.prettiercache --list-different \"./**/*.{html,css,js,cjs,jsx,ts,cts,tsx,md,json}\"",
     "prepare": "husky",
     "test": "node --test-reporter=spec --test './src/**/*.spec.ts' './src/*.spec.ts'",
@@ -78,6 +80,7 @@
     "prettier-plugin-pkg": "0.22.1",
     "publint": "0.3.25",
     "semantic-release": "25.0.9",
+    "tinybench": "6.2.2",
     "tsdown": "0.23.3",
     "typescript": "6.0.3",
     "typescript-eslint": "8.72.1"

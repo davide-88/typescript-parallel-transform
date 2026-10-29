@@ -36,3 +36,7 @@ jspm_packages
 
 ## library folder
 lib
+
+## benchmark output
+bench-results/
+compare-*.json
