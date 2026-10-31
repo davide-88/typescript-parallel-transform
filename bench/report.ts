@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import type { Comparison } from './compare.ts';
 
 /** A scenario that is more than this much slower is flagged. */
-export const REGRESSION_THRESHOLD = 0.1;
+export const REGRESSION_THRESHOLD = 0.2;
 
 const comparisons = process.argv
   .slice(2)

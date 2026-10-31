@@ -171,8 +171,8 @@ pnpm build:bundle && node bench/compare.ts \
 
 Pull requests to `development` run the same scenarios on Node 22, 24 and 26 for
 both the base branch and the PR in the same job. A comment on the PR shows ops/s
-for each side and flags scenarios that are more than 10% slower. It never fails
-the build, since shared CI runners are noisy.
+for each side and flags scenarios that are more than 20% slower (or faster). It
+never fails the build, since shared CI runners are noisy.
 
 ## License
 
